@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Features from "./components/Features";
 import HealthCard from "./components/HealthCards";
 import SearchIcon from "./Icons/Search";
@@ -50,7 +51,7 @@ export default function Home() {
     },
   ];
   return (
-    <div className="flex flex-col flex-1 items-center gap-4  bg-zinc-100 px-4">
+    <div className="flex flex-col flex-1 items-center gap-4  bg-zinc-100 ">
       <div className="flex items-center justify-between  p-1 w-full px-6 py-4">
         <h1 className="text-2xl font-bold tracking-wide">Pulse</h1>
 
@@ -58,9 +59,9 @@ export default function Home() {
           <div className="cursor-pointer  text-xs hover:bg-neutral-200 hover:text-neutral-800 rounded-full border border-white duration-300 ease-in-out py-3 px-6  font-semibold">
             {"Features"}
           </div>
-          <div className="bg-black text-white cursor-pointer font-semibold duration-300 ease-in-out hover:bg-neutral-800 rounded-full px-6 py-3 text-xs">
+          <Link href={'/scan'} className="bg-black text-white cursor-pointer font-semibold duration-300 ease-in-out hover:bg-neutral-800 rounded-full px-6 py-3 text-xs">
             {"LogIn"}
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -106,20 +107,137 @@ export default function Home() {
 
       {/* Feature Section */}
 
-
       <div className="py-6 flex flex-col items-center gap-10">
+        <h1 className="text-4xl font-bold w-full text-left">
+          {"Inside the Box"}
+        </h1>
 
-        <h1 className="text-4xl font-bold w-full text-left">{'Inside the Box'}</h1>
-
-        <Features/>
+        <Features />
       </div>
 
+      {/* {'Footer section'} */}
+
+      <footer className="bg-black w-full  px-8 py-14 md:px-16 lg:px-24">
+        {/* Top Section */}
+        <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
+          {/* Brand */}
+          <div className="max-w-sm">
+            <h1 className="text-3xl font-semibold text-white tracking-tight">
+              Pulse
+            </h1>
+
+            <p className="mt-4 text-sm leading-6 text-neutral-400">
+              AI-powered product label intelligence for healthier and smarter
+              decisions.
+            </p>
+
+            <button className="mt-6 rounded-full bg-lime-400 px-5 py-3 text-sm font-medium text-black transition-all duration-300 hover:scale-[1.03]">
+              Start Scanning
+            </button>
+          </div>
+
+          {/* Links */}
+          <div className="grid grid-cols-2 gap-10 md:grid-cols-3">
+            {/* Product */}
+            <div>
+              <h3 className="text-sm font-semibold text-white">Product</h3>
+
+              <ul className="mt-4 space-y-3 text-sm text-neutral-400">
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Features
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Insights
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  API
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Pricing
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div>
+              <h3 className="text-sm font-semibold text-white">Resources</h3>
+
+              <ul className="mt-4 space-y-3 text-sm text-neutral-400">
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Documentation
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Guides
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Blog
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Support
+                </li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="text-sm font-semibold text-white">Company</h3>
+
+              <ul className="mt-4 space-y-3 text-sm text-neutral-400">
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  About
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Contact
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Privacy
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Terms
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+
+
+
+        <div className="relative mt-24 overflow-hidden">
+  <h1 className="select-none text-center text-[120px] md:text-[180px] lg:text-[260px] font-black tracking-tight leading-none bg-linear-to-b from-white/20 to-white/5 bg-clip-text text-transparent">
+    PULSE
+  </h1>
+</div>
 
 
 
 
 
+        {/* Divider */}
+        <div className="mt-14 h-px w-full bg-white/10" />
 
+
+        
+
+        {/* Bottom */}
+        <div className="mt-6 flex flex-col gap-4 text-sm text-neutral-500 md:flex-row md:items-center md:justify-between">
+          <p>© 2026 Pulse. Built for smarter product decisions.</p>
+
+          <div className="flex items-center gap-6">
+            <span className="cursor-pointer hover:text-white transition-colors">
+              Twitter
+            </span>
+
+            <span className="cursor-pointer hover:text-white transition-colors">
+              GitHub
+            </span>
+
+            <span className="cursor-pointer hover:text-white transition-colors">
+              LinkedIn
+            </span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
