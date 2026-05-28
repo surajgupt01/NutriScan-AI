@@ -11,7 +11,7 @@ export default function Scan() {
   const [path, setpath] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col flex-1 items-center gap-4 justify-center bg-linear-to-t from-zinc-50 via-green-200 to-zinc-50 px-4">
+    <div className="flex flex-col flex-1 items-center gap-4 justify-center bg-linear-to-t from-zinc-50 via-lime-100 to-zinc-50 px-4">
       {/* <div className="bg-white rounded-xl w-200 h-100 p-2"></div> */}
 
       <div className="min-h-50 lg:w-[60%] w-full whitespace-pre-line">
