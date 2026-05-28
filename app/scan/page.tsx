@@ -29,7 +29,7 @@ I’ll analyze ingredients, nutrition facts, additives, and health impact instan
       <div className="bg-neutral-800 rounded-4xl shadow-md shadow-zinc-200 lg:w-[50%] lg:h-auto h-auto overflow-visible w-full flex flex-col lg:p-4 p-2 transition-all duration-300 ease-in-out">
         {path && (
           <div className="w-full p-2 h-auto">
-            <div className="relative w-auto h-auto max-w-32 max-h-32 border border-white rounded-xl overflow-visible flex justify-center items-center">
+            <div className="relative  w-32 h-32 border border-white rounded-xl overflow-visible flex justify-center items-center object-cover">
               <button
                 className="absolute -top-2 -right-2 z-50 bg-gray-200 hover:bg-gray-500 duration-300 ease-in-out rounded-full p-1 cursor-pointer shadow-md"
                 onClick={() => {
