@@ -151,20 +151,20 @@ function OrbitRing({
 }
 
 function Label({ text }: { text: string }) {
-  const iconMap: Record<string, ReactNode> = {
-    "High Protein": <Check size={18} />,
-    "Low Sugar": <CandyOff size={18} />,
-    "Good Fiber": <Wheat size={18} />,
-    "Low Sodium": <Leaf size={18} />,
-    "Low Protein": <Bone size={18} />,
-    "Low": <Leaf size={18} />,
+  const iconMap: Record<string, {icon : ReactNode , color : string}> = {
+    "High Protein":{icon :  <Check size={18} /> , color : 'bg-red-200 text-red-600'},
+    "Low Sugar": {icon : <CandyOff size={18} /> , color : 'bg-yellow-100 text-yellow-600'},
+    "Good Fiber": {icon : <Wheat size={18} /> , color : 'bg-taupe-100 text-taupe-600'},
+    "Low Sodium": {icon : <Leaf size={18} /> , color : 'bg-green-100 text-green-600'},
+    "Low Protein": {icon : <Bone size={18} /> , color : 'bg-blue-100 text-blue-600'},
+    "Low": {icon : <Leaf size={18} /> , color : 'bg-green-100 text-green-600'},
   };
 
-  const IconToRender = iconMap[text] || <HelpCircle size={18} />;
-
+  const IconToRender = iconMap[text].icon || <HelpCircle size={18} />;
+  const IconColor = iconMap[text].color
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-neutral-100 bg-white px-2 py-1 shadow-xl sm:gap-2 sm:px-3 sm:py-2 lg:gap-3 lg:px-5 lg:py-3">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 sm:h-8 sm:w-8">
+      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${IconColor}  sm:h-8 sm:w-8`}>
         {IconToRender}
       </div>
 
