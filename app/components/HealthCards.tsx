@@ -1,6 +1,6 @@
 const cardVariants = {
   lime: {
-    card: "bg-lime-400 rotate-[-5deg]",
+    card: "bg-lime-400 rotate-[-5deg] absolute",
     text: "text-lime-950",
     muted: "text-lime-800",
     badge: "bg-lime-500",
@@ -8,7 +8,7 @@ const cardVariants = {
   },
 
   red: {
-    card: "bg-red-400 rotate-[10deg]",
+    card: "bg-red-400 rotate-[10deg] absolute",
     text: "text-red-950",
     muted: "text-red-800",
     badge: "bg-red-500",
@@ -16,7 +16,7 @@ const cardVariants = {
   },
 
   blue: {
-    card: "bg-blue-400 rotate-[5deg]",
+    card: "bg-blue-400 rotate-[5deg] absolute",
     text: "text-blue-950",
     muted: "text-blue-800",
     badge: "bg-blue-500",
@@ -24,7 +24,7 @@ const cardVariants = {
   },
 
   white: {
-    card: "bg-zinc-100 border border-zinc-200 rotate-[15deg]",
+    card: "bg-zinc-100 border border-zinc-200 rotate-[15deg] absolute",
     text: "text-zinc-900",
     muted: "text-zinc-600",
     badge: "bg-white border border-zinc-200",
@@ -41,6 +41,7 @@ export default function HealthCard({
   category,
   rating,
   source,
+  deg
 }: {
   color: VariantType ;
   score: string;
@@ -48,12 +49,13 @@ export default function HealthCard({
   category: string;
   rating: string;
   source: string;
+  deg ?: string
 }) {
   const styles = cardVariants[color];
 
   return (
     <div
-      className={`${styles.card} rounded-3xl lg:w-65 flex flex-col justify-between w-50 h-70 lg:h-95 absolute origin-bottom-left `}
+      className={`${deg ? deg : `${styles.card } w-50 h-70 lg:h-95 lg:w-65`}  rounded-3xl  flex flex-col justify-between  origin-bottom-left `}
     >
       <div>
         <div className="flex items-center px-4 mt-4 gap-1">

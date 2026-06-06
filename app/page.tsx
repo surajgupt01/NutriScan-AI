@@ -2,6 +2,7 @@ import Link from "next/link";
 import Features from "./components/Features";
 import HealthCard from "./components/HealthCards";
 import SearchIcon from "./Icons/Search";
+import ScoreCard from "./components/HealthScore";
 
 export default function Home() {
   type VariantType = "lime" | "red" | "blue" | "white";
@@ -13,6 +14,7 @@ export default function Home() {
     source: string;
     title: string;
     score: string;
+    deg?: string;
   }
 
   const packedItems: ItemsType[] = [
@@ -51,7 +53,7 @@ export default function Home() {
     },
   ];
   return (
-    <div className="flex flex-col flex-1 items-center gap-4  bg-zinc-100 ">
+    <div className="flex flex-col flex-1 items-center gap-4  bg-zinc-100  h-auto">
       <div className="flex items-center justify-between  p-1 w-full px-6 py-4">
         <h1 className="text-2xl font-bold tracking-wide">Pulse</h1>
 
@@ -59,7 +61,10 @@ export default function Home() {
           <div className="cursor-pointer  text-xs hover:bg-neutral-200 hover:text-neutral-800 rounded-full border border-white duration-300 ease-in-out py-3 px-6  font-semibold">
             {"Features"}
           </div>
-          <Link href={'/scan'} className="bg-black text-white cursor-pointer font-semibold duration-300 ease-in-out hover:bg-neutral-800 rounded-full px-6 py-3 text-xs">
+          <Link
+            href={"/scan"}
+            className="bg-black text-white cursor-pointer font-semibold duration-300 ease-in-out hover:bg-neutral-800 rounded-full px-6 py-3 text-xs"
+          >
             {"LogIn"}
           </Link>
         </div>
@@ -105,9 +110,13 @@ export default function Home() {
         </div>
       </div>
 
+      {/*Health  card section */}
+
+      <ScoreCard />
+
       {/* Feature Section */}
 
-      <div className="py-6 flex flex-col items-center gap-10">
+      <div className="py-20 flex flex-col items-center gap-10">
         <h1 className="text-4xl font-bold w-full text-left">
           {"Inside the Box"}
         </h1>
@@ -200,24 +209,14 @@ export default function Home() {
           </div>
         </div>
 
-
-
-
         <div className="relative mt-24 overflow-hidden">
-  <h1 className="select-none text-center text-[120px] md:text-[180px] lg:text-[260px] font-black tracking-tight leading-none bg-linear-to-b from-white/20 to-white/5 bg-clip-text text-transparent">
-    PULSE
-  </h1>
-</div>
-
-
-
-
+          <h1 className="select-none text-center text-[120px] md:text-[180px] lg:text-[260px] font-black tracking-tight leading-none bg-linear-to-b from-white/20 to-white/5 bg-clip-text text-transparent">
+            PULSE
+          </h1>
+        </div>
 
         {/* Divider */}
         <div className="mt-14 h-px w-full bg-white/10" />
-
-
-        
 
         {/* Bottom */}
         <div className="mt-6 flex flex-col gap-4 text-sm text-neutral-500 md:flex-row md:items-center md:justify-between">
