@@ -45,3 +45,34 @@
       score: "94",
     },
   ];
+
+
+  import {
+  ScanSearch,
+  FlaskConical,
+  Flame,
+  CircleHelp,
+} from "lucide-react";
+
+export const scanFeatures = [
+  {
+    title: "Analyze Label",
+    description: "Scan nutrition facts or ingredients",
+    icon: ScanSearch,
+  },
+  {
+    title: "Check Additives",
+    description: "Identify harmful preservatives",
+    icon: FlaskConical,
+  },
+  {
+    title: "Calorie Breakdown",
+    description: "Macro and micro-nutrient ratios",
+    icon: Flame,
+  },
+  {
+    title: "General Advice",
+    description: "Ask about diet compatibility",
+    icon: CircleHelp,
+  },
+];

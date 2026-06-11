@@ -6,7 +6,7 @@ export default function Send() {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="size-4 -rotate-45 group-hover:scale-90 duration-300 ease-in-out"
+      className="size-4 -rotate-45  group-hover:scale-90 duration-300 ease-in-out"
     >
       <path
         strokeLinecap="round"
