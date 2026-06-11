@@ -10,7 +10,6 @@ import { scanFeatures } from "../constants/default";
 import Logo from "../components/Logo";
 import PulseIcon from "../Icons/Pulse";
 import { PanelLeftClose, Search, SquarePen } from "lucide-react";
-import { color } from "motion/react";
 
 export default function Scan() {
   const file = useRef<HTMLInputElement>(null);
@@ -31,7 +30,6 @@ export default function Scan() {
     setInput("");
     setChat((prevChat) => [...prevChat, { type: "user", data: userMsg }]);
 
-    // Auto-scroll to bottom
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
@@ -53,10 +51,14 @@ export default function Scan() {
   const [menu, setMenuPanel] = useState(false);
 
   return (
-    // Full viewport height, flex column
-    <div className="h-screen flex  bg-linear-to-t from-white via-lime-50 to-white overflow-hidden">
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-white via-lime-50 to-white">
       <div
-        className={`flex-1 ${menu ? "lg:w-[15%] w-[70%]  h-full backdrop-blur-2xl z-500 bg-black/10  border-r border-black/10" : "w-20 h-full "}  px-3 py-5 duration-300 ease-in-out  lg:block fixed`}
+        className={`fixed inset-y-0 left-0 z-50 
+           shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
+          menu
+            ? "w-[min(20rem,82vw)] border-r border-black/10 bg-black/10 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none"
+            : "w-0 bg-transparent sm:w-20"
+        }`}
       >
         <div className={`w-full ${menu ? "text-end" : "text-center"}`}>
           <button
@@ -68,14 +70,15 @@ export default function Scan() {
             <PanelLeftClose
               size={22}
               strokeWidth={1}
-              className="text-gray-700 hover:text-gray-500 cursor-pointer transition-colors duration-200"
+              className="cursor-pointer text-gray-700 transition-colors duration-200 hover:text-gray-500"
             />
           </button>
         </div>
+
         {menu && (
-          <div className="flex justify-between items-end w-full">
+          <div className="flex w-full items-end justify-between">
             <div className="flex flex-row items-end gap-1">
-              <div className="bg-black rounded-lg font-normal w-6 h-6 text-white flex items-center justify-center ">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-black font-normal text-white">
                 <PulseIcon />
               </div>
               <Logo textSize="text-md font-semibold"></Logo>
@@ -84,152 +87,156 @@ export default function Scan() {
         )}
 
         {menu && (
-          <div className="w-full flex-1 mt-6 text-xs flex flex-col gap-2">
-            <div className="flex items-end justify-start gap-1  p-2 hover:bg-neutral-100 cursor-pointer duration-100 ease-in-out rounded-lg">
+          <div className="mt-6 flex w-full flex-1 flex-col gap-2 text-xs">
+            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-100">
               <SquarePen strokeWidth={1} size={20}></SquarePen>
-              <span className="">{"New Chat"}</span>
+              <span>{"New Chat"}</span>
             </div>
-            <div className="flex items-end justify-start gap-1  p-2 hover:bg-neutral-100 cursor-pointer duration-100 ease-in-out rounded-lg">
+            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-100">
               <Search strokeWidth={1} size={20}></Search>
-              <span className="">{"Search Chat"}</span>
+              <span>{"Search Chat"}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Messages area (scrollable, fills remaining space) ── */}
+      {menu && (
+        <button
+          aria-label="Close menu"
+          className="fixed inset-0 z-40 bg-black/10 lg:hidden"
+          onClick={() => setMenuPanel(false)}
+        />
+      )}
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 w-full">
-        <div className="max-w-4xl mx-auto flex flex-col gap-3 lg:h-[75%] h-[85%] overflow-auto">
-          {/* Welcome screen shown only when no messages */}
-          {chat.length === 0 && (
-            <div className="flex flex-col items-center justify-center flex-1 gap-2 py-20 font-sans tracking-wide">
-              <h1 className="lg:text-5xl text-4xl text-center text-zinc-800 font-bold ">
-                {`Welcome to `}
-                <span className="bg-linear-to-r from-lime-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(132,204,22,0.4)]">
-                  Pulse AI
-                </span>
-              </h1>
-              <p className="text-center text-zinc-500 lg:text-sm text-xs p-2 font-ight max-w-lg whitespace-pre-line">
-                {`Upload a food label or ask a nutrition question.\nI'll analyze ingredients, nutrition facts, additives, and health impact instantly.`}
-              </p>
-              <div className="lg:w-[85%] w-full flex flex-wrap items-center justify-center lg:gap-6 gap-3 lg:mt-8 mt-4">
-                {scanFeatures.map((e) => (
-                  <div
-                    key={e.title}
-                    className="flex justify-center items-center rounded-full py-1 px-3 bg-lime-50 gap-2 border  border-neutral-200"
-                  >
-                    <e.icon strokeWidth={1.2} />
-                    <div className="flex items-start flex-col justify-center">
-                      <div className="text-neutral-600 text-xs font-semibold">
-                        {e.title}
-                      </div>
-                      <div className="text-neutral-600 text-xs font-light">
-                        {e.description}
+      <main
+        className={`flex min-h-0 flex-1 flex-col transition-[padding] duration-300 ease-in-out ${
+          menu ? "lg:pl-64" : "pl-0 sm:pl-20"
+        }`}
+      >
+        <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col px-3 pt-4 sm:px-5 sm:pt-6 lg:px-6">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-4 pr-1">
+            {chat.length === 0 && (
+              <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 font-sans tracking-wide sm:py-12 lg:py-20">
+                <h1 className="text-center text-3xl font-bold text-zinc-800 sm:text-4xl lg:text-5xl">
+                  {`Welcome to `}
+                  <span className="bg-linear-to-r from-lime-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(132,204,22,0.4)]">
+                    Pulse AI
+                  </span>
+                </h1>
+                <p className="max-w-lg whitespace-pre-line p-2 text-center text-xs font-light text-zinc-500 sm:text-sm">
+                  {`Upload a food label or ask a nutrition question.\nI'll analyze ingredients, nutrition facts, additives, and health impact instantly.`}
+                </p>
+                <div className="mt-4 flex w-full flex-wrap items-center justify-center gap-2 sm:w-[90%] sm:gap-3 lg:mt-8 lg:w-[85%] lg:gap-6">
+                  {scanFeatures.map((e) => (
+                    <div
+                      key={e.title}
+                      className="flex max-w-full items-center justify-center gap-2 rounded-full border border-neutral-200 bg-lime-50 px-3 py-1"
+                    >
+                      <e.icon strokeWidth={1.2} className="shrink-0" />
+                      <div className="flex min-w-0 flex-col items-start justify-center">
+                        <div className="max-w-full truncate text-xs font-semibold text-neutral-600">
+                          {e.title}
+                        </div>
+                        <div className="max-w-full truncate text-xs font-light text-neutral-600">
+                          {e.description}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Chat messages */}
-          {chat.map((e, idx) => (
-            <div
-              key={idx}
-              className={`flex ${e.type === "bot" ? "justify-start" : "justify-end"}`}
-            >
-              <div
-                className={`max-w-[75%] px-4 py-2 rounded-2xl whitespace-pre-wrap text-sm
-                  ${
-                    e.type === "bot"
-                      ? "text-zinc-800"
-                      : "bg-white text-black shadow-sm"
-                  }`}
-              >
-                {e.data}
-              </div>
-            </div>
-          ))}
-
-          {/* Scroll anchor */}
-          <div ref={messagesEndRef} className="flex-1" />
-        </div>
-
-        {/* ── Input bar (always at bottom, never scrolls away) ── */}
-        <div className="px-4 pb-5 pt-2 flex justify-center">
-          <div className="bg-neutral-800 rounded-4xl shadow-md shadow-zinc-200 w-full max-w-2xl flex flex-col lg:p-4 p-2 transition-all duration-300 ease-in-out">
-            {/* Image preview */}
-            {path && (
-              <div className="w-full p-2 h-auto">
-                <div className="relative w-32 h-32 border border-white rounded-xl overflow-visible flex justify-center items-center">
-                  <button
-                    className="absolute -top-2 -right-2 z-50 bg-gray-200 hover:bg-gray-500 duration-300 ease-in-out rounded-full p-1 cursor-pointer shadow-md"
-                    onClick={() => setpath("")}
-                  >
-                    <CrossIcon />
-                  </button>
-                  <Image
-                    src={path}
-                    alt="label-image"
-                    className="object-fill w-full h-full rounded-xl"
-                    width={200}
-                    height={200}
-                  />
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* Textarea — NO fixed/absolute, flows naturally inside the card */}
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleScanBody();
-                }
-              }}
-              placeholder="Ask AI about these ingredients..."
-              rows={1}
-              className="w-full p-3 text-xs text-gray-200 bg-transparent resize-none outline-none overflow-auto max-h-40 field-sizing-content"
-            />
-
-            {/* Bottom row: camera button + send button */}
-            <div className="w-full h-auto lg:py-3 py-1 lg:px-3 px-2 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 relative">
-                <label
-                  htmlFor="file"
-                  className="rounded-2xl group flex items-center gap-1 hover:bg-black text-xs text-white font-semibold p-2 border border-neutral-700 bg-neutral-700 cursor-pointer ease-in-out duration-300"
-                >
-                  <Camera />
-                  <div className="group-hover:opacity-100 bg-neutral-100 border border-gray-200 rounded-lg text-neutral-700 shadow-xs shadow-gray-800 group-hover:translate-y-2 opacity-0 duration-300 w-20 text-center ease-in-out absolute translate-y-6 -top-9 -left-5 p-1">
-                    Scan Label
-                  </div>
-                </label>
-                <input
-                  ref={file}
-                  type="file"
-                  id="file"
-                  className="hidden"
-                  onChange={() => {
-                    const fileInput = file?.current?.files?.[0];
-                    if (fileInput) setpath(URL.createObjectURL(fileInput));
-                  }}
-                />
-              </div>
-
-              <button
-                className="bg-neutral-300 group p-3 rounded-full hover:scale-105 cursor-pointer duration-300 ease-in-out active:scale-90"
-                onClick={handleScanBody}
+            {chat.map((e, idx) => (
+              <div
+                key={idx}
+                className={`flex ${e.type === "bot" ? "justify-start" : "justify-end"}`}
               >
-                <Send />
-              </button>
+                <div
+                  className={`max-w-[88%] wrap-break-words rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap sm:max-w-[80%] sm:px-4 lg:max-w-[75%] ${
+                    e.type === "bot"
+                      ? "text-zinc-800"
+                      : "bg-white text-black shadow-sm"
+                  }`}
+                >
+                  {e.data}
+                </div>
+              </div>
+            ))}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="flex shrink-0 justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
+            <div className="flex w-full max-w-2xl flex-col rounded-3xl bg-neutral-800 p-2 shadow-md shadow-zinc-200 transition-all duration-300 ease-in-out sm:rounded-4xl sm:p-3 lg:p-4">
+              {path && (
+                <div className="h-auto w-full p-2">
+                  <div className="relative flex h-24 w-24 items-center justify-center overflow-visible rounded-xl border border-white sm:h-32 sm:w-32">
+                    <button
+                      className="absolute -right-2 -top-2 z-50 cursor-pointer rounded-full bg-gray-200 p-1 shadow-md duration-300 ease-in-out hover:bg-gray-500"
+                      onClick={() => setpath("")}
+                    >
+                      <CrossIcon />
+                    </button>
+                    <Image
+                      src={path}
+                      alt="label-image"
+                      className="h-full w-full rounded-xl object-fill"
+                      width={200}
+                      height={200}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleScanBody();
+                  }
+                }}
+                placeholder="Ask AI about these ingredients..."
+                rows={1}
+                className="field-sizing-content max-h-32 w-full resize-none overflow-auto bg-transparent p-3 text-sm text-gray-200 outline-none sm:max-h-40 sm:text-xs"
+              />
+
+              <div className="flex h-auto w-full items-center justify-between gap-2 px-2 py-1 lg:px-3 lg:py-3">
+                <div className="relative flex items-center gap-2">
+                  <label
+                    htmlFor="file"
+                    className="group flex cursor-pointer items-center gap-1 rounded-2xl border border-neutral-700 bg-neutral-700 p-2 text-xs font-semibold text-white duration-300 ease-in-out hover:bg-black"
+                  >
+                    <Camera />
+                    <div className="absolute -left-5 -top-9 w-20 translate-y-6 rounded-lg border border-gray-200 bg-neutral-100 p-1 text-center text-neutral-700 opacity-0 shadow-xs shadow-gray-800 duration-300 ease-in-out group-hover:translate-y-2 group-hover:opacity-100">
+                      Scan Label
+                    </div>
+                  </label>
+                  <input
+                    ref={file}
+                    type="file"
+                    id="file"
+                    className="hidden"
+                    onChange={() => {
+                      const fileInput = file?.current?.files?.[0];
+                      if (fileInput) setpath(URL.createObjectURL(fileInput));
+                    }}
+                  />
+                </div>
+
+                <button
+                  className="group shrink-0 cursor-pointer rounded-full bg-neutral-300 p-3 duration-300 ease-in-out hover:scale-105 active:scale-90"
+                  onClick={handleScanBody}
+                >
+                  <Send />
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
