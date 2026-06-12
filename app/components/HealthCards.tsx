@@ -1,3 +1,4 @@
+"use client"
 const cardVariants = {
   lime: {
     card: "bg-lime-400 rotate-[-5deg] absolute",
@@ -5,6 +6,7 @@ const cardVariants = {
     muted: "text-lime-800",
     badge: "bg-lime-500",
     dot: "bg-lime-800",
+    deg : -7
   },
 
   red: {
@@ -13,6 +15,8 @@ const cardVariants = {
     muted: "text-red-800",
     badge: "bg-red-500",
     dot: "bg-red-800",
+    deg : 14
+
   },
 
   blue: {
@@ -21,19 +25,24 @@ const cardVariants = {
     muted: "text-blue-800",
     badge: "bg-blue-500",
     dot: "bg-blue-800",
+    deg : 8
+
   },
 
   white: {
-    card: "bg-zinc-100 border border-zinc-200 rotate-[15deg] absolute",
+    card: "bg-black/10 backdrop-blur-sm border border-zinc-200 rotate-[15deg] absolute",
     text: "text-zinc-900",
     muted: "text-zinc-600",
     badge: "bg-white border border-zinc-200",
     dot: "bg-zinc-500",
+    deg : 18
+
   },
 };
 
 type VariantType =  "lime" | "red" | "blue" | "white" ;
 
+import {motion} from "motion/react"
 export default function HealthCard({
   color,
   title,
@@ -54,7 +63,11 @@ export default function HealthCard({
   const styles = cardVariants[color];
 
   return (
-    <div
+    <motion.div
+    initial={{rotate : styles.deg}}
+    animate={{rotate : 0}}
+    whileHover={{translateY : -12}}
+    transition={{duration : 0.5 , ease : 'easeInOut'}}
       className={`${deg ? deg : `${styles.card } w-50 h-70 lg:h-95 lg:w-65`}  rounded-3xl  flex flex-col justify-between  origin-bottom-left `}
     >
       <div>
@@ -90,6 +103,6 @@ export default function HealthCard({
       >
         {source}
       </div>
-    </div>
+    </motion.div>
   );
 }
