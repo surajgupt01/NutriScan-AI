@@ -107,7 +107,7 @@ export default function HeroSection() {
       initial={{ translateY: 150 }}
       animate={{ translateY: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
-      className="w-full lg:h-120 h-160   flex lg:flex-row flex-col lg:items-start  items-center lg:py-6  lg:justify-center"
+      className="w-full lg:h-120 h-160   flex lg:flex-row flex-col lg:items-start  my-20 items-center lg:py-6  lg:justify-center"
     >
       <div className="flex-col flex items-start justify-start gap-4   ">
         <h1 className="lg:text-7xl text-5xl font-extrabold whitespace-pre-line">

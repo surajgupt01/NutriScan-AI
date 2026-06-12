@@ -21,7 +21,7 @@ export default function ScoreCard() {
   return (
     <div
       ref={containerRef}
-      className="relative flex min-h-[680px] w-full flex-col items-center overflow-hidden px-4 py-14 perspective-[1000px] sm:min-h-[760px] sm:px-6 sm:py-16 lg:min-h-[900px] lg:px-8 lg:py-24"
+      className="relative flex min-h-[680px] w-full flex-col items-center overflow-hidden px-4 py-14 perspective-[1000px] sm:min-h-[760px] sm:px-6 sm:py-16 lg:min-h-[900px] lg:px-8 lg:py-24 "
     >
       <h1 className="z-10 text-center text-3xl font-bold leading-tight text-neutral-800 sm:text-4xl lg:text-5xl">
         Your health score card

@@ -26,17 +26,16 @@ export default function Home() {
 
       {/* Hero section */}
 
-      <HeroSection />
 
-      <section className="w-full min-h-screen bg-linear-to-b from-neutral-100 via-neutral-200 to-neutral-100 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-20">
+      <section className="w-full min-h-screen bg-linear-to-b from-neutral-100 via-neutral-200 to-neutral-100 overflow-hidden ">
+        <div className="max-w-7xl mx-auto px-6">
           {/* Text */}
           <div className="text-center max-w-4xl mx-auto mb-12 md:mb-16">
             <span className="px-4 py-1 rounded-full bg-lime-500/10 text-lime-600 text-sm font-medium">
               AI-Powered Food Analysis
             </span>
 
-            <h2 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight">
+            <h2 className="mt-6 text-xl md:text-3xl font-bold tracking-tight">
              {` Understand What's Really`}
               <span className="bg-linear-to-r from-lime-500 to-emerald-500 bg-clip-text text-transparent">
                 {" "}
@@ -44,7 +43,7 @@ export default function Home() {
               </span>
             </h2>
 
-            <p className="mt-6 text-lg text-neutral-600 max-w-2xl mx-auto">
+            <p className="mt-6 text-sm text-neutral-600 max-w-2xl mx-auto">
               Scan ingredient labels, uncover hidden additives, and get instant
               AI-powered health insights before you buy.
             </p>
@@ -52,22 +51,24 @@ export default function Home() {
 
           {/* Dashboard Preview */}
           <div className="flex justify-center">
-            <div className="relative p-2 md:p-2 rounded-2xl md:rounded-3xl bg-lime-500/20 backdrop-blur-xl shadow-[0_0_80px_rgba(132,204,22,0.3)]">
+            <div className="relative p-2 md:p-6 rounded-2xl md:rounded-3xl  backdrop-blur-xl shadow-[0_0_80px_rgba(132,204,22,0.3)]">
               {/* Glow */}
-              <div className="absolute inset-0 bg-lime-500/20 blur-3xl -z-10"></div>
+              <div className="absolute inset-0 bg-lime-500/30 blur-3xl -z-10"></div>
 
               <Image
                 src="/ChatInterface.png"
                 alt="Label Scan Dashboard"
-                width={1200}
-                height={800}
+                width={850}
+                height={1000}
                 priority
-                className="w-full max-w-5xl h-auto rounded-xl shadow-2xl"
+                className="w-full max-w-5xl  rounded-xl shadow-2xl"
               />
             </div>
           </div>
         </div>
       </section>
+
+
 
       {/*Health  card section */}
 
@@ -75,13 +76,16 @@ export default function Home() {
 
       {/* Feature Section */}
 
-      <div className="py-20 flex flex-col items-center gap-10">
+      <div className="py-20 flex flex-col items-center gap-10 my-8">
         <h1 className="text-4xl font-bold w-full text-left">
           {"Inside the Box"}
         </h1>
 
         <Features />
       </div>
+
+      <HeroSection />
+
 
       {/* {'Footer section'} */}
 
