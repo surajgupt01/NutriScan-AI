@@ -1,7 +1,7 @@
 "use client"
 const cardVariants = {
   lime: {
-    card: "bg-lime-400 rotate-[-5deg] absolute",
+    card: "bg-lime-400/80 rotate-[-5deg] absolute",
     text: "text-lime-950",
     muted: "text-lime-800",
     badge: "bg-lime-500",
@@ -10,7 +10,7 @@ const cardVariants = {
   },
 
   red: {
-    card: "bg-red-400 rotate-[10deg] absolute",
+    card: "bg-red-400/80 rotate-[10deg] absolute",
     text: "text-red-950",
     muted: "text-red-800",
     badge: "bg-red-500",
@@ -20,7 +20,7 @@ const cardVariants = {
   },
 
   blue: {
-    card: "bg-blue-400 rotate-[5deg] absolute",
+    card: "bg-blue-400/80 rotate-[5deg] absolute",
     text: "text-blue-950",
     muted: "text-blue-800",
     badge: "bg-blue-500",
@@ -68,7 +68,7 @@ export default function HealthCard({
     animate={{rotate : 0}}
     whileHover={{translateY : -12}}
     transition={{duration : 0.5 , ease : 'easeInOut'}}
-      className={`${deg ? deg : `${styles.card } w-50 h-70 lg:h-95 lg:w-65`}  rounded-3xl  flex flex-col justify-between  origin-bottom-left `}
+      className={`${deg ? deg : `${styles.card } w-50 h-70 lg:h-95 lg:w-65`}  rounded-3xl  flex flex-col justify-between  origin-bottom-left  backdrop-blur-sm`}
     >
       <div>
         <div className="flex items-center px-4 mt-4 gap-1">

@@ -15,7 +15,7 @@ export default function ScoreCard() {
     offset: ["start end", "center center"],
   });
 
-  const rotateY = useTransform(scrollYProgress, [0, 1], [360, 0]);
+  const translateY = useTransform(scrollYProgress, [0, 1], [200, 0]);
   const opacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
@@ -36,7 +36,7 @@ export default function ScoreCard() {
         <motion.div
           className="preserve-3d relative z-10"
           style={{
-            rotateY,
+            translateY,
             opacity,
             transformOrigin: "bottom",
           }}
@@ -48,7 +48,7 @@ export default function ScoreCard() {
             source={packedItems[3].source}
             title={packedItems[3].title}
             score={packedItems[3].score}
-            deg="relative z-[200] h-[18.5rem] w-[13.25rem] rotate-0 bg-lime-400 shadow-xl sm:h-80 sm:w-56 lg:h-95 lg:w-65"
+            deg="relative z-[200] h-[18.5rem] w-[13.25rem] rotate-0 bg-lime-400/50 shadow-xl sm:h-80 sm:w-56 lg:h-95 lg:w-65 backdrop-blur-sm"
           />
         </motion.div>
       </div>

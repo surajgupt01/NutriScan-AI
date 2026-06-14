@@ -4,12 +4,18 @@ import ScoreCard from "./components/HealthScore";
 import HeroSection from "./components/HeroSection";
 import Image from "next/image";
 import Logo from "./components/Logo";
+import PulseIcon from "./Icons/Pulse";
 
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center gap-4  bg-zinc-100  h-auto">
       <div className="flex items-center justify-between  p-1 w-full px-6 py-4">
-        <h1 className="text-2xl font-bold tracking-wide"><Logo textSize="lg:text-md text-sm"></Logo></h1>
+        <h1 className="text-2xl font-bold tracking-wide flex items-center gap-1">
+          <div className="bg-black flex items-center justify-center lg:rounded-xl rounded-md text-white lg:h-8 lg:w-8 h-5 w-5">
+            <PulseIcon />
+          </div>
+          <Logo textSize="lg:text-xl text-sm"></Logo>
+        </h1>
 
         <div className="flex items-center gap-2 justify-between">
           <div className="cursor-pointer  text-xs hover:bg-neutral-200 hover:text-neutral-800 rounded-full border border-white duration-300 ease-in-out py-3 px-6  font-semibold">
@@ -17,7 +23,7 @@ export default function Home() {
           </div>
           <Link
             href={"/scan"}
-            className="bg-black text-white cursor-pointer font-semibold duration-300 ease-in-out hover:bg-neutral-800 rounded-full px-6 py-3 text-xs"
+            className="bg-black text-white cursor-pointer font-semibold duration-300 ease-in-out hover:bg-neutral-800 rounded-full px-6 py-3 text-xs "
           >
             {"LogIn"}
           </Link>
@@ -26,49 +32,38 @@ export default function Home() {
 
       {/* Hero section */}
 
-
-      <section className="w-full min-h-screen bg-linear-to-b from-neutral-100 via-neutral-200 to-neutral-100 overflow-hidden ">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="w-full h-150 lg:min-h-screen bg-linear-to-b from-neutral-100 via-neutral-200 to-neutral-100 overflow-hidden ">
+        <div className="max-w-7xl mx-auto flex flex-col items-center px-2">
           {/* Text */}
           <div className="text-center max-w-4xl mx-auto mb-12 md:mb-16">
             <span className="px-4 py-1 rounded-full bg-lime-500/10 text-lime-600 text-sm font-medium">
               AI-Powered Food Analysis
             </span>
 
-            <h2 className="mt-6 text-xl md:text-3xl font-bold tracking-tight">
-             {` Understand What's Really`}
+            <h2 className="mt-6 text-xl md:text-3xl font-bold tracking-wider">
+              {` Understand What's Really`}
               <span className="bg-linear-to-r from-lime-500 to-emerald-500 bg-clip-text text-transparent">
                 {" "}
                 Inside Your Food
               </span>
             </h2>
 
-            <p className="mt-6 text-sm text-neutral-600 max-w-2xl mx-auto">
+            <p className="mt-4 text-sm text-neutral-600 max-w-xl mx-auto tracking-wide">
               Scan ingredient labels, uncover hidden additives, and get instant
               AI-powered health insights before you buy.
             </p>
           </div>
 
           {/* Dashboard Preview */}
-          <div className="flex justify-center">
-            <div className="relative p-2 md:p-6 rounded-2xl md:rounded-3xl  backdrop-blur-xl shadow-[0_0_80px_rgba(132,204,22,0.3)]">
-              {/* Glow */}
+
+          <div className="backdrop-blur-xl relative  lg:p-6 p-4 rounded-4xl shadow-[0_0_80px_rgba(132,204,22,0.3)] ">
               <div className="absolute inset-0 bg-lime-500/30 blur-3xl -z-10"></div>
 
-              <Image
-                src="/ChatInterface.png"
-                alt="Label Scan Dashboard"
-                width={850}
-                height={1000}
-                priority
-                className="w-full max-w-5xl  rounded-xl shadow-2xl"
-              />
-            </div>
+            <Image alt="dashboard" width={870} height={1000} className="rounded-xl shadow-2xl  shadow-neutral-400 lg:h-[65vh] h-[28vh] sm:w-[64vw] w-[95vw] " src={'/ChatInterface.png'}></Image>
           </div>
+
         </div>
       </section>
-
-
 
       {/*Health  card section */}
 
@@ -76,8 +71,8 @@ export default function Home() {
 
       {/* Feature Section */}
 
-      <div className="py-20 flex flex-col items-center gap-10 my-8">
-        <h1 className="text-4xl font-bold w-full text-left">
+      <div className="lg:py-20 flex flex-col items-center gap-10 lg:my-8 bg-linear-to-b from-zinc-100 via-lime-200/80 to-zinc-100 px-6">
+        <h1 className="lg:text-4xl text-xl font-bold w-full text-left">
           {"Inside the Box"}
         </h1>
 
@@ -85,7 +80,6 @@ export default function Home() {
       </div>
 
       <HeroSection />
-
 
       {/* {'Footer section'} */}
 
