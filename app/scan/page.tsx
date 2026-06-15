@@ -16,6 +16,18 @@ import {
 
 } from "../constants/responseType";
 
+import imageCompression from "browser-image-compression";
+
+const compressImage = async (file: File) => {
+  const options = {
+    maxSizeMB: 0.5,          // target size
+    maxWidthOrHeight: 1024,  // resize if needed
+    useWebWorker: true,
+  };
+
+  return await imageCompression(file, options);
+};
+
 
 export default function Scan() {
   const fileToBase64 = (file: File): Promise<string> => {
@@ -288,7 +300,8 @@ export default function Scan() {
                     onChange={async () => {
                       const fileInput = file?.current?.files?.[0];
                       if (fileInput) {
-                        const base64 = await fileToBase64(fileInput);
+                        const compressedImage = await compressImage(fileInput)
+                        const base64 = await fileToBase64(compressedImage);
                         setBase64(base64);
                         setpath(URL.createObjectURL(fileInput));
                       }
