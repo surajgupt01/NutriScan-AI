@@ -18,16 +18,37 @@ import {
 
 import imageCompression from "browser-image-compression";
 
-const compressImage = async (file: File) => {
-  const options = {
-    maxSizeMB: 0.5,          // target size
-    maxWidthOrHeight: 1024,  // resize if needed
+
+async function processImage(file: File): Promise<File> {
+  let processedFile = file;
+
+  if (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    file.name.toLowerCase().endsWith(".heic") ||
+    file.name.toLowerCase().endsWith(".heif")
+  ) {
+    const heic2any = (await import("heic2any")).default;
+
+    const blob = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality: 0.8,
+    });
+
+    processedFile = new File(
+      [blob as Blob],
+      file.name.replace(/\.(heic|heif)$/i, ".jpg"),
+      { type: "image/jpeg" }
+    );
+  }
+
+  return await imageCompression(processedFile, {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1024,
     useWebWorker: true,
-  };
-
-  return await imageCompression(file, options);
-};
-
+  });
+}
 
 export default function Scan() {
   const fileToBase64 = (file: File): Promise<string> => {
@@ -300,10 +321,10 @@ export default function Scan() {
                     onChange={async () => {
                       const fileInput = file?.current?.files?.[0];
                       if (fileInput) {
-                        const compressedImage = await compressImage(fileInput)
+                        const compressedImage = await processImage(fileInput)
                         const base64 = await fileToBase64(compressedImage);
                         setBase64(base64);
-                        setpath(URL.createObjectURL(fileInput));
+                        setpath(URL.createObjectURL(compressedImage));
                       }
                     }}
                   />
