@@ -1,6 +1,35 @@
 @import "tailwindcss";
 
 
+@layer utilities {
+  /* Custom scrollbar structure class */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 3px;               /* Width of vertical scrollbar */
+    height: 3px;              /* Height of horizontal scrollbar */
+  }
+  
+  /* The Background Track */
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;      /* Slate-100 background colour */
+    border-radius: 4px;
+  }
+  
+  /* The Draggable Handle */
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;      /* Slate-300 handle colour */
+    border-radius: 4px;
+  }
+
+  /* Handle on Hover */
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;      /* Slate-400 on hover */
+  }
+  .custom-scrollbar ::-webkit-scrollbar {
+    scroll-behaviour : smooth
+  }
+}
+
+
 
 body {
 

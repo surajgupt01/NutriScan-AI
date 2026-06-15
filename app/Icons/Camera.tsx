@@ -6,7 +6,7 @@ export default function Camera() {
       viewBox="0 0 24 24"
       strokeWidth={2}
       stroke="currentColor"
-      className="size-4 group-hover:scale-90 duration-300 ease-in-out text-gray-400 group-hover:text-white"
+      className="size-4 group-hover:scale-90 duration-300 ease-in-out text-gray-800 group-hover:text-gray-400"
     >
       <path
         strokeLinecap="round"

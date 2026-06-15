@@ -6,12 +6,12 @@ export default function Send() {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="size-4 -rotate-45  group-hover:scale-90 duration-300 ease-in-out"
+      className="size-4"
     >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+        d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
       />
     </svg>
   );

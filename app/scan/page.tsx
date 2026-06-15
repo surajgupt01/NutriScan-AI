@@ -3,32 +3,65 @@
 import Image from "next/image";
 import Camera from "../Icons/Camera";
 import Send from "../Icons/Send";
-import { useRef, useState } from "react";
+import {  useRef, useState } from "react";
 import CrossIcon from "../Icons/Cross";
 import axios from "axios";
 import { scanFeatures } from "../constants/default";
 import Logo from "../components/Logo";
 import PulseIcon from "../Icons/Pulse";
-import { PanelLeftClose, Search, SquarePen } from "lucide-react";
+import {  ChevronsLeftRight, Search, SquarePen } from "lucide-react";
+import {
+  PulseBlock,
+  PulseResponse,
+
+} from "../constants/responseType";
+
 
 export default function Scan() {
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.readAsDataURL(file);
+
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
   const file = useRef<HTMLInputElement>(null);
   const [path, setpath] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  interface chat {
-    type: string;
+  interface UserMessage {
+    role: "user";
     data: string;
   }
 
-  const [chat, setChat] = useState<chat[]>([]);
+  interface AssistantMessage {
+    role: "assistant";
+    data: PulseBlock[];
+  }
+
+  type ChatMessage = UserMessage | AssistantMessage;
+  const [chat, setChat] = useState<ChatMessage[]>([]);
+  const [base64, setBase64] = useState("");
 
   async function handleScanBody() {
     if (!input.trim()) return;
     const userMsg = input;
     setInput("");
-    setChat((prevChat) => [...prevChat, { type: "user", data: userMsg }]);
+    setChat((prev) => [
+      ...prev,
+      {
+        role: "user",
+        data: userMsg,
+      },
+    ]);
 
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -36,11 +69,21 @@ export default function Scan() {
 
     const response = await axios.post("http://127.0.0.1:8000/scan/", {
       prompt: userMsg,
+      image: base64,
+      contextofChat: chat,
     });
+
+    const ParsedRespone: PulseResponse = await JSON.parse(
+      response?.data?.response,
+    );
+
+    // const textRes : TextBlock = ParsedRespone.blocks
+
+    console.log(ParsedRespone.blocks);
 
     setChat((prevChat) => [
       ...prevChat,
-      { type: "bot", data: response?.data?.response },
+      { role: "assistant", data: ParsedRespone.blocks },
     ]);
 
     setTimeout(() => {
@@ -50,27 +93,34 @@ export default function Scan() {
 
   const [menu, setMenuPanel] = useState(false);
 
+  console.log(chat);
+  
+
+  // useEffect(()=>{
+  //     setLoading()
+  // } , [chat])
+
   return (
-    <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-white via-lime-50 to-white">
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100">
       <div
         className={`fixed inset-y-0 left-0 z-50 
            shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
-          menu
-            ? "w-[min(20rem,82vw)]  bg-black/10 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none"
-            : "w-0 bg-transparent sm:w-20"
-        }`}
+             menu
+               ? "w-[min(20rem,82vw)]  bg-gray-100 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none"
+               : "w-0 bg-transparent sm:w-20"
+           }`}
       >
         <div className={`w-full ${menu ? "text-end" : "text-center"}`}>
           <button
-            className="cursor-pointer"
+            className="cursor-pointer bg-gray-300 rounded-xl p-1 hover:bg-gray-500 duration-300 ease-in-out text-neutral-300"
             onClick={() => {
               setMenuPanel((e) => !e);
             }}
           >
-            <PanelLeftClose
+            <ChevronsLeftRight
               size={22}
               strokeWidth={1}
-              className="cursor-pointer text-gray-700 transition-colors duration-200 hover:text-gray-500"
+              className="cursor-pointer text-gray-700 transition-colors duration-200 hover:text-gray-200"
             />
           </button>
         </div>
@@ -88,11 +138,11 @@ export default function Scan() {
 
         {menu && (
           <div className="mt-6 flex w-full flex-1 flex-col gap-2 text-xs">
-            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-100">
+            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
               <SquarePen strokeWidth={1} size={20}></SquarePen>
               <span>{"New Chat"}</span>
             </div>
-            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-100">
+            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
               <Search strokeWidth={1} size={20}></Search>
               <span>{"Search Chat"}</span>
             </div>
@@ -110,11 +160,11 @@ export default function Scan() {
 
       <main
         className={`flex min-h-0 flex-1 flex-col transition-[padding] duration-300 ease-in-out ${
-          menu ? "lg:pl-64" : "pl-0 sm:pl-20"
+          menu ? "lg:pl-64" : "pl-0 sm:pl-20 "
         }`}
       >
-        <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col px-3 pt-4 sm:px-5 sm:pt-6 lg:px-6">
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-4 pr-1">
+        <div className="mx-auto flex min-h-0 w-full  flex-1 flex-col px-3 pt-4 sm:px-5 sm:pt-6 lg:px-10 max-w-6xl ">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-2 px-8 custom-scrollbar">
             {chat.length === 0 && (
               <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 font-sans tracking-wide sm:py-12 lg:py-20">
                 <h1 className="text-center text-3xl font-bold text-zinc-800 sm:text-4xl lg:text-5xl">
@@ -130,7 +180,7 @@ export default function Scan() {
                   {scanFeatures.map((e) => (
                     <div
                       key={e.title}
-                      className="flex max-w-full items-center justify-center gap-2 rounded-full border border-neutral-200 bg-lime-50 px-3 py-1"
+                      className="flex max-w-full items-center justify-center gap-2 rounded-full border border-neutral-200  px-3 py-1"
                     >
                       <e.icon strokeWidth={1.2} className="shrink-0" />
                       <div className="flex min-w-0 flex-col items-start justify-center">
@@ -147,19 +197,27 @@ export default function Scan() {
               </div>
             )}
 
-            {chat.map((e, idx) => (
+            {chat.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex ${e.type === "bot" ? "justify-start" : "justify-end"}`}
+                className={`flex ${
+                  msg.role === "assistant" ? "justify-start" : "justify-end"
+                }`}
               >
                 <div
-                  className={`max-w-[88%] wrap-break-words rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap sm:max-w-[80%] sm:px-4 lg:max-w-[75%] ${
-                    e.type === "bot"
-                      ? "text-zinc-800"
-                      : "bg-white text-black shadow-sm"
+                  className={`max-w-[80%] rounded-3xl px-4 py-3 ${
+                    msg.role === "assistant" ? "bg-white" : "bg-gray-200"
                   }`}
                 >
-                  {e.data}
+                  {msg.role === "user" ? (
+                    <p className="text-[13px]">{msg.data}</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {msg.data?.map((block , idx) => (
+                        <BlockRenderer key={idx} block={block} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -167,14 +225,18 @@ export default function Scan() {
             <div ref={messagesEndRef} />
           </div>
 
+   
           <div className="flex shrink-0 justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
-            <div className="flex w-full max-w-2xl flex-col rounded-3xl bg-neutral-800 p-2 shadow-md shadow-zinc-200 transition-all duration-300 ease-in-out sm:rounded-4xl sm:p-3 lg:p-4">
+            <div className="flex w-full max-w-2xl flex-col rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm shadow-zinc-100 transition-all duration-300 ease-in-out sm:rounded-4xl sm:p-3 lg:p-4">
               {path && (
                 <div className="h-auto w-full p-2">
                   <div className="relative flex h-24 w-24 items-center justify-center overflow-visible rounded-xl border border-white sm:h-32 sm:w-32">
                     <button
                       className="absolute -right-2 -top-2 z-50 cursor-pointer rounded-full bg-gray-200 p-1 shadow-md duration-300 ease-in-out hover:bg-gray-500"
-                      onClick={() => setpath("")}
+                      onClick={() => {
+                        setpath("")
+                        setBase64("")
+                      }}
                     >
                       <CrossIcon />
                     </button>
@@ -200,43 +262,150 @@ export default function Scan() {
                 }}
                 placeholder="Ask AI about these ingredients..."
                 rows={1}
-                className="field-sizing-content max-h-32 w-full resize-none overflow-auto bg-transparent p-3 text-sm text-gray-200 outline-none sm:max-h-40 sm:text-xs"
+                className="field-sizing-content max-h-32 w-full resize-none overflow-auto bg-transparent p-3 text-sm text-black outline-none sm:max-h-40 sm:text-xs"
               />
 
               <div className="flex h-auto w-full items-center justify-between gap-2 px-2 py-1 lg:px-3 lg:py-3">
                 <div className="relative flex items-center gap-2">
                   <label
                     htmlFor="file"
-                    className="group flex cursor-pointer items-center gap-1 rounded-2xl border border-neutral-700 bg-neutral-700 p-2 text-xs font-semibold text-white duration-300 ease-in-out hover:bg-black"
+                    className="group flex cursor-pointer items-center gap-1 rounded-2xl border border-neutral-100 bg-neutral-200 p-2 text-xs font-semibold text-neutrsal-900 duration-300 ease-in-out hover:border-gray-400"
                   >
                     <Camera />
-                    <div className="absolute -left-5 -top-9 w-20 translate-y-6 rounded-lg border border-gray-200 bg-neutral-100 p-1 text-center text-neutral-700 opacity-0 shadow-xs shadow-gray-800 duration-300 ease-in-out group-hover:translate-y-2 group-hover:opacity-100">
+                    <div className="absolute -left-5 -top-9 w-20 translate-y-6 rounded-lg border border-gray-200 bg-neutral-100 p-1 text-center text-neutral-900 opacity-0 shadow-xs shadow-gray-100 duration-300 ease-in-out group-hover:translate-y-2 group-hover:opacity-100">
                       Scan Label
                     </div>
+                    <span className="font-normal text-xs text-black group-hover:text-gray-500 ">
+                      Attach
+                    </span>
                   </label>
                   <input
                     ref={file}
                     type="file"
                     id="file"
                     className="hidden"
-                    onChange={() => {
+                    onChange={async () => {
                       const fileInput = file?.current?.files?.[0];
-                      if (fileInput) setpath(URL.createObjectURL(fileInput));
+                      if (fileInput) {
+                        const base64 = await fileToBase64(fileInput);
+                        setBase64(base64);
+                        setpath(URL.createObjectURL(fileInput));
+                      }
                     }}
                   />
                 </div>
 
                 <button
-                  className="group shrink-0 cursor-pointer rounded-full bg-neutral-300 p-3 duration-300 ease-in-out hover:scale-105 active:scale-90"
+                  className="group shrink-0 cursor-pointer text-white flex items-center text-xs rounded-full bg-neutral-900 py-2 px-4 gap-1 duration-300 ease-in-out hover:scale-101 active:scale-90"
                   onClick={handleScanBody}
                 >
                   <Send />
+                  <span className="font-normal">send</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
       </main>
+          
+
     </div>
   );
+}
+
+function BlockRenderer({ block }: { block: PulseBlock }) {
+  switch (block.type) {
+    case "text":
+      return <p className="text-[13px] leading-7">{block.content}</p>;
+
+    case "bullet_list":
+      return (
+        <div className="space-y-2">
+          <h3 className="font-semibold text-[14px]">{block.title}</h3>
+
+          <ul className="list-disc pl-5 space-y-1 text-[13px]">
+            {block.items.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      );
+
+    case "warning":
+      return (
+        <div className="rounded-xl border border-yellow-100 bg-yellow-50 p-3 text-[13px]">
+          <p className="font-medium">{block.severity.toUpperCase()} Warning</p>
+          <p>{block.content}</p>
+        </div>
+      );
+
+    case "score":
+      return (
+        <div className="rounded-xl bg-green-50 p-3 text-[13px]">
+          <h3 className="font-semibold text-[14px]">
+            {block.label}: {block.value}/100
+          </h3>
+          <p>{block.explanation}</p>
+        </div>
+      );
+
+    case "allergens":
+      return (
+        <div>
+          <h3 className="font-semibold text-[14px]">Allergens</h3>
+
+          <div className="flex gap-2 flex-wrap mt-2">
+            {block.items.map((item) => (
+              <span
+                key={item}
+                className="rounded-full bg-red-100 px-2 py-1 text-xs"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "table":
+      return (
+        <table className="w-full border-collapse border border-neutral-300 text-[13px]">
+          <thead>
+            <tr>
+              {block.headers.map((header) => (
+                <th key={header} className="border border-neutral-300 p-2 text-left">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {block.rows.map((row, idx) => (
+              <tr key={idx}>
+                {row.map((cell, i) => (
+                  <td key={i} className="border border-neutral-300 p-2">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+
+    case "ingredient":
+      return (
+        <div className="rounded-xl border p-3">
+          <h3 className="font-semibold text-[14px]">{block.name}</h3>
+
+          <p className="text-xs text-gray-500">{block.category}</p>
+
+          <p className="mt-2">{block.explanation}</p>
+        </div>
+      );
+
+    default:
+      return null;
+  }
 }
