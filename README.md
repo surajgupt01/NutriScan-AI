@@ -1,4 +1,4 @@
-# 🥗 Label Scan AI
+# 🥗 Pulse AI
 
 AI-powered food label and ingredient analyzer that helps users understand packaged food products by scanning labels and receiving scientifically grounded insights.
 
