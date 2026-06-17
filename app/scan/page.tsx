@@ -347,7 +347,7 @@ export default function Scan() {
                       const fileInput = file?.current?.files?.[0];
                       const formats = ["jpeg", "jpg", "heif", "heic", "png"];
 
-                      const x = fileInput?.name.split(".")[1];
+                      const x = fileInput?.name.split(".")[-1];
                       if (x && !formats.includes(x)) {
                         alert("Invalid image type");
                         return;
