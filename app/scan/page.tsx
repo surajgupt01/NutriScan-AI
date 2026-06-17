@@ -14,6 +14,8 @@ import { PulseBlock, PulseResponse } from "../constants/responseType";
 
 import imageCompression from "browser-image-compression";
 import { motion } from "motion/react";
+import PulseLine from "../Icons/Loading";
+import ChatThinkingLoader from "../Icons/Loading";
 
 async function processImage(file: File): Promise<File> {
   let processedFile = file;
@@ -76,63 +78,101 @@ export default function Scan() {
     data: PulseBlock[];
   }
 
-  type ChatMessage = UserMessage | AssistantMessage;
+  interface LoadingState {
+    role: "server";
+    data: "loading";
+  }
+
+  type ChatMessage = UserMessage | AssistantMessage | LoadingState;
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [base64, setBase64] = useState("");
   const [responseWait, SetResponseWait] = useState(false);
+async function handleScanBody() {
+  if (!input.trim()) return;
 
+  const userMsg = input.trim();
+  setInput("");
 
-  async function handleScanBody() {
-    if (!input.trim()) return;
-    const userMsg = input;
-    setInput("");
-    setChat((prev) => [
-      ...prev,
-      {
-        role: "user",
-        data: userMsg,
-      },
-    ]);
+  const BackendPath = process.env.NEXT_PUBLIC_API_URL;
+  if (!BackendPath) return;
 
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 50);
-    const BackendPath = process.env.NEXT_PUBLIC_API_URL;
-    if (!BackendPath) return;
+  // Chat to send to backend (NO loading message)
+  const contextChat: ChatMessage[] = [
+    ...chat,
+    {
+      role: "user",
+      data: userMsg,
+    },
+  ];
 
+  // UI chat (WITH loading message)
+  setChat([
+    ...contextChat,
+    {
+      role: "server",
+      data: "loading",
+    },
+  ]);
 
-    SetResponseWait(true);
-    
+  SetResponseWait(true);
+
+  setTimeout(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, 50);
+
+  try {
     const response = await axios.post(BackendPath, {
       prompt: userMsg,
       image: base64,
-      contextofChat: chat,
+      contextofChat: contextChat, // no loading message
     });
 
-    const ParsedRespone: PulseResponse = await JSON.parse(
-      response?.data?.response,
+    const parsedResponse: PulseResponse = JSON.parse(
+      response.data.response
     );
 
-    // const textRes : TextBlock = ParsedRespone.blocks
-
-    console.log(ParsedRespone.blocks);
-
-    setChat((prevChat) => [
-      ...prevChat,
-      { role: "assistant", data: ParsedRespone.blocks },
+    // Remove loading and add assistant response
+    setChat((prev) => [
+      ...prev.filter((msg) => msg.role !== "server"),
+      {
+        role: "assistant",
+        data: parsedResponse.blocks,
+      },
     ]);
+  } catch (error) {
+    console.error(error);
+
+    // Remove loading and show error
+    // setChat((prev) => [
+    //   ...prev.filter((msg) => msg.role !== "server"),
+    //   {
+    //     role: "assistant",
+    //     data: [
+    //       {
+    //         type: "text",
+    //         text: "Something went wrong. Please try again.",
+    //       },
+    //     ],
+    //   },
+    // ]);
+  } finally {
     SetResponseWait(false);
+
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+      });
     }, 50);
   }
+}
 
   const [menu, setMenuPanel] = useState(false);
 
   console.log(chat);
 
   const [imageUpload, setImgUpload] = useState(false);
-
 
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100">
@@ -172,9 +212,10 @@ export default function Scan() {
 
         {menu && (
           <div className="mt-6 flex w-full flex-1 flex-col gap-2 text-xs">
-            <button 
-            onClick={()=>setChat([])}
-            className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
+            <button
+              onClick={() => setChat([])}
+              className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800"
+            >
               <SquarePen strokeWidth={1} size={20}></SquarePen>
               <span>{"New Chat"}</span>
             </button>
@@ -237,7 +278,7 @@ export default function Scan() {
               <div
                 key={idx}
                 className={`flex ${
-                  msg.role === "assistant" ? "justify-start" : "justify-end"
+                  msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <motion.div
@@ -250,29 +291,27 @@ export default function Scan() {
                 >
                   {msg.role === "user" ? (
                     <motion.p
-                      initial={{ opacity: 0, translateY: -5 }}
+                      initial={{ opacity: 0, translateY: -10 }}
                       animate={{ opacity: 1, translateY: 0 }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
                       className="text-[13px]"
                     >
                       {msg.data}
                     </motion.p>
-                  ) : (
-                    <>
-                     
-
-                      <motion.div
-                        initial={{ opacity: 0, translateY: -5 }}
-                        animate={{ opacity: 1, translateY: 0 }}
-                        transition={{ duration: 0.7, ease: "easeInOut" }}
-                        className="space-y-4"
-                      >
-                        {msg.data?.map((block, idx) => (
-                          <BlockRenderer key={idx} block={block} />
-                        ))}
-                      </motion.div>
-                    </>
-                  )}
+                  ) : msg.role === "server" ? (
+                    <div><ChatThinkingLoader className="text-black" size={20} /></div>
+                  ) : msg.role === "assistant" ? (
+                    <motion.div
+                      initial={{ opacity: 0, translateY: -7 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      className="space-y-4"
+                    >
+                      {msg.data?.map((block, idx) => (
+                        <BlockRenderer key={idx} block={block} />
+                      ))}
+                    </motion.div>
+                  ) : null}
                 </motion.div>
               </div>
             ))}
