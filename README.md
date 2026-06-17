@@ -48,7 +48,7 @@ Backend:  https://github.com/surajgupt01/PulseBackend
 - Uvicorn
 
 ### AI
-- Google Gemini API
+- Google Gemma API (Hugging Face)
 - Structured JSON Outputs
 
 ---
@@ -65,7 +65,7 @@ User Uploads Image
  FastAPI Backend
         │
         ▼
- Gemini API
+     LLM API
         │
         ▼
  Ingredient Analysis
@@ -213,19 +213,13 @@ git push origin feature/my-feature
 
 Open a Pull Request 🚀
 
----
 
-## 📜 License
-
-This project is licensed under the MIT License.
-
----
 
 ## 👨‍💻 Author
 
 **Suraj Gupta**
 
-- GitHub: https://github.com/your-github-username
-- LinkedIn: https://linkedin.com/in/your-linkedin-profile
+- GitHub:   https://github.com/surajgupt01
+- LinkedIn: https://www.linkedin.com/in/suraj-gupta-1894051ba/
 
 If you found this project useful, please give it a ⭐ on GitHub!
