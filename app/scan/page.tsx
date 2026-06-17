@@ -3,21 +3,17 @@
 import Image from "next/image";
 import Camera from "../Icons/Camera";
 import Send from "../Icons/Send";
-import {  useRef, useState } from "react";
+import { useRef, useState } from "react";
 import CrossIcon from "../Icons/Cross";
 import axios from "axios";
 import { scanFeatures } from "../constants/default";
 import Logo from "../components/Logo";
 import PulseIcon from "../Icons/Pulse";
-import {  ChevronsLeftRight, Search, SquarePen } from "lucide-react";
-import {
-  PulseBlock,
-  PulseResponse,
-
-} from "../constants/responseType";
+import { ChevronsLeftRight, Search, SquarePen } from "lucide-react";
+import { PulseBlock, PulseResponse } from "../constants/responseType";
 
 import imageCompression from "browser-image-compression";
-
+import { motion } from "motion/react";
 
 async function processImage(file: File): Promise<File> {
   let processedFile = file;
@@ -39,7 +35,7 @@ async function processImage(file: File): Promise<File> {
     processedFile = new File(
       [blob as Blob],
       file.name.replace(/\.(heic|heif)$/i, ".jpg"),
-      { type: "image/jpeg" }
+      { type: "image/jpeg" },
     );
   }
 
@@ -83,6 +79,8 @@ export default function Scan() {
   type ChatMessage = UserMessage | AssistantMessage;
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [base64, setBase64] = useState("");
+  const [responseWait, SetResponseWait] = useState(false);
+
 
   async function handleScanBody() {
     if (!input.trim()) return;
@@ -99,9 +97,13 @@ export default function Scan() {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
-    const BackendPath = process.env.NEXT_PUBLIC_API_URL
-    if(!BackendPath) return
-    const response = await axios.post(BackendPath , {
+    const BackendPath = process.env.NEXT_PUBLIC_API_URL;
+    if (!BackendPath) return;
+
+
+    SetResponseWait(true);
+    
+    const response = await axios.post(BackendPath, {
       prompt: userMsg,
       image: base64,
       contextofChat: chat,
@@ -119,7 +121,7 @@ export default function Scan() {
       ...prevChat,
       { role: "assistant", data: ParsedRespone.blocks },
     ]);
-
+    SetResponseWait(false);
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
@@ -128,11 +130,9 @@ export default function Scan() {
   const [menu, setMenuPanel] = useState(false);
 
   console.log(chat);
-  
 
-  // useEffect(()=>{
-  //     setLoading()
-  // } , [chat])
+  const [imageUpload, setImgUpload] = useState(false);
+
 
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100">
@@ -172,10 +172,12 @@ export default function Scan() {
 
         {menu && (
           <div className="mt-6 flex w-full flex-1 flex-col gap-2 text-xs">
-            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
+            <button 
+            onClick={()=>setChat([])}
+            className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
               <SquarePen strokeWidth={1} size={20}></SquarePen>
               <span>{"New Chat"}</span>
-            </div>
+            </button>
             <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
               <Search strokeWidth={1} size={20}></Search>
               <span>{"Search Chat"}</span>
@@ -193,7 +195,7 @@ export default function Scan() {
       )}
 
       <main
-        className={`flex min-h-0 flex-1 flex-col transition-[padding] duration-300 ease-in-out ${
+        className={`flex   min-h-0 flex-1 flex-col transition-[padding] duration-300 ease-in-out ${
           menu ? "lg:pl-64" : "pl-0 sm:pl-20 "
         }`}
       >
@@ -238,38 +240,60 @@ export default function Scan() {
                   msg.role === "assistant" ? "justify-start" : "justify-end"
                 }`}
               >
-                <div
+                <motion.div
+                  initial={{ opacity: 0, translateY: -5 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
                   className={`max-w-[80%] rounded-3xl px-4 py-3 ${
                     msg.role === "assistant" ? "bg-white" : "bg-gray-200"
                   }`}
                 >
                   {msg.role === "user" ? (
-                    <p className="text-[13px]">{msg.data}</p>
+                    <motion.p
+                      initial={{ opacity: 0, translateY: -5 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      className="text-[13px]"
+                    >
+                      {msg.data}
+                    </motion.p>
                   ) : (
-                    <div className="space-y-4">
-                      {msg.data?.map((block , idx) => (
-                        <BlockRenderer key={idx} block={block} />
-                      ))}
-                    </div>
+                    <>
+                     
+
+                      <motion.div
+                        initial={{ opacity: 0, translateY: -5 }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ duration: 0.7, ease: "easeInOut" }}
+                        className="space-y-4"
+                      >
+                        {msg.data?.map((block, idx) => (
+                          <BlockRenderer key={idx} block={block} />
+                        ))}
+                      </motion.div>
+                    </>
                   )}
-                </div>
+                </motion.div>
               </div>
             ))}
 
             <div ref={messagesEndRef} />
           </div>
 
-   
-          <div className="flex shrink-0 justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
+          <div className="flex shrink-0 justify-center   pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
             <div className="flex w-full max-w-2xl flex-col rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm shadow-zinc-100 transition-all duration-300 ease-in-out sm:rounded-4xl sm:p-3 lg:p-4">
+              {imageUpload && (
+                <div className="w-28 h-28 bg-gray-500 animate-pulse  rounded-xl"></div>
+              )}
+
               {path && (
-                <div className="h-auto w-full p-2">
+                <div className={`h-auto w-full p-2 `}>
                   <div className="relative flex h-24 w-24 items-center justify-center overflow-visible rounded-xl border border-white sm:h-32 sm:w-32">
                     <button
                       className="absolute -right-2 -top-2 z-50 cursor-pointer rounded-full bg-gray-200 p-1 shadow-md duration-300 ease-in-out hover:bg-gray-500"
                       onClick={() => {
-                        setpath("")
-                        setBase64("")
+                        setpath("");
+                        setBase64("");
                       }}
                     >
                       <CrossIcon />
@@ -286,6 +310,7 @@ export default function Scan() {
               )}
 
               <textarea
+                // id="prompt"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -320,11 +345,27 @@ export default function Scan() {
                     className="hidden"
                     onChange={async () => {
                       const fileInput = file?.current?.files?.[0];
+                      const formats = ["jpeg", "jpg", "heif", "heic", "png"];
+
+                      const x = fileInput?.name.split(".")[1];
+                      if (x && !formats.includes(x)) {
+                        alert("Invalid image type");
+                        return;
+                      }
+
                       if (fileInput) {
-                        const compressedImage = await processImage(fileInput)
-                        const base64 = await fileToBase64(compressedImage);
-                        setBase64(base64);
-                        setpath(URL.createObjectURL(compressedImage));
+                        try {
+                          setImgUpload(true);
+
+                          const compressedImage = await processImage(fileInput);
+                          const base64 = await fileToBase64(compressedImage);
+                          setBase64(base64);
+                          setpath(URL.createObjectURL(compressedImage));
+                        } catch (err) {
+                          alert(err);
+                        } finally {
+                          setImgUpload(false);
+                        }
                       }
                     }}
                   />
@@ -342,8 +383,6 @@ export default function Scan() {
           </div>
         </div>
       </main>
-          
-
     </div>
   );
 }
@@ -408,7 +447,10 @@ function BlockRenderer({ block }: { block: PulseBlock }) {
           <thead>
             <tr>
               {block.headers.map((header) => (
-                <th key={header} className="border border-neutral-300 p-2 text-left">
+                <th
+                  key={header}
+                  className="border border-neutral-300 p-2 text-left"
+                >
                   {header}
                 </th>
               ))}
