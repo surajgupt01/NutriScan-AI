@@ -200,7 +200,7 @@ export default function Scan() {
         className={`fixed inset-y-0 left-0 z-50 
            shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
              menu
-               ? "w-[min(20rem,82vw)]  bg-gray-100 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none"
+               ? "w-[min(20rem,82vw)]  bg-gray-200 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none"
                : "w-0 bg-transparent sm:w-20"
            }`}
       >
