@@ -14,7 +14,6 @@ import { PulseBlock, PulseResponse } from "../constants/responseType";
 
 import imageCompression from "browser-image-compression";
 import { motion } from "motion/react";
-import PulseLine from "../Icons/Loading";
 import ChatThinkingLoader from "../Icons/Loading";
 
 async function processImage(file: File): Promise<File> {
@@ -71,6 +70,7 @@ export default function Scan() {
   interface UserMessage {
     role: "user";
     data: string;
+    image?: string | null;
   }
 
   interface AssistantMessage {
@@ -87,86 +87,85 @@ export default function Scan() {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [base64, setBase64] = useState("");
   const [responseWait, SetResponseWait] = useState(false);
-async function handleScanBody() {
-  if (!input.trim()) return;
+  async function handleScanBody() {
+    if (!input.trim()) return;
 
-  const userMsg = input.trim();
-  setInput("");
+    const userMsg = input.trim();
+    setInput("");
 
-  const BackendPath = process.env.NEXT_PUBLIC_API_URL;
-  if (!BackendPath) return;
+    const BackendPath = process.env.NEXT_PUBLIC_API_URL;
+    if (!BackendPath) return;
 
-  // Chat to send to backend (NO loading message)
-  const contextChat: ChatMessage[] = [
-    ...chat,
-    {
-      role: "user",
-      data: userMsg,
-    },
-  ];
-
-  // UI chat (WITH loading message)
-  setChat([
-    ...contextChat,
-    {
-      role: "server",
-      data: "loading",
-    },
-  ]);
-
-  SetResponseWait(true);
-
-  setTimeout(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, 50);
-
-  try {
-    const response = await axios.post(BackendPath, {
-      prompt: userMsg,
-      image: base64,
-      contextofChat: contextChat, // no loading message
-    });
-
-    const parsedResponse: PulseResponse = JSON.parse(
-      response.data.response
-    );
-
-    // Remove loading and add assistant response
-    setChat((prev) => [
-      ...prev.filter((msg) => msg.role !== "server"),
+    // Chat to send to backend (NO loading message)
+    const contextChat: ChatMessage[] = [
+      ...chat,
       {
-        role: "assistant",
-        data: parsedResponse.blocks,
+        role: "user",
+        data: userMsg,
+        image : path ? path : null
+      },
+    ];
+
+    // UI chat (WITH loading message)
+    setChat([
+      ...contextChat,
+      {
+        role: "server",
+        data: "loading",
       },
     ]);
-  } catch (error) {
-    console.error(error);
 
-    // Remove loading and show error
-    // setChat((prev) => [
-    //   ...prev.filter((msg) => msg.role !== "server"),
-    //   {
-    //     role: "assistant",
-    //     data: [
-    //       {
-    //         type: "text",
-    //         text: "Something went wrong. Please try again.",
-    //       },
-    //     ],
-    //   },
-    // ]);
-  } finally {
-    SetResponseWait(false);
+    SetResponseWait(true);
 
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
       });
     }, 50);
+
+    try {
+      const response = await axios.post(BackendPath, {
+        prompt: userMsg,
+        image: base64,
+        contextofChat: contextChat, // no loading message
+      });
+      console.log("response data ---> ",response)
+      const parsedResponse: PulseResponse = JSON.parse(response.data.response);
+
+      // Remove loading and add assistant response
+      setChat((prev) => [
+        ...prev.filter((msg) => msg.role !== "server"),
+        {
+          role: "assistant",
+          data: parsedResponse.blocks,
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
+
+      // Remove loading and show error
+      // setChat((prev) => [
+      //   ...prev.filter((msg) => msg.role !== "server"),
+      //   {
+      //     role: "assistant",
+      //     data: [
+      //       {
+      //         type: "text",
+      //         text: "Something went wrong. Please try again.",
+      //       },
+      //     ],
+      //   },
+      // ]);
+    } finally {
+      SetResponseWait(false);
+
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+        });
+      }, 50);
+    }
   }
-}
 
   const [menu, setMenuPanel] = useState(false);
 
@@ -174,8 +173,29 @@ async function handleScanBody() {
 
   const [imageUpload, setImgUpload] = useState(false);
 
+  const [imagePreview, setPreview] = useState(false);
+  const [previewPath , setPreviewPath] = useState<string|null>()
+
   return (
-    <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100">
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100 relative">
+      {imagePreview && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          onClick={() => setPreview(false)}
+          className="w-full h-full backdrop-blur-sm flex justify-center items-center absolute z-100 bg-black/10"
+        >
+          {previewPath ?
+          <Image
+            src={previewPath}
+            width={250}
+            height={250}
+            className="duration-300 ease-in-out w-80 h-80"
+            alt="product-label-image"
+          ></Image> : null}
+        </motion.div>
+      )}
       <div
         className={`fixed inset-y-0 left-0 z-50 
            shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
@@ -282,28 +302,55 @@ async function handleScanBody() {
                 }`}
               >
                 <motion.div
-                  initial={{ opacity: 0, translateY: -5 }}
-                  animate={{ opacity: 1, translateY: 0 }}
+                  initial={{
+                    opacity: 0,
+                    translateY: -5,
+                    translateX: 15,
+                    scale: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    translateY: 0,
+                    translateX: 0,
+                    scale: 1,
+                  }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className={`max-w-[80%] rounded-3xl px-4 py-3 ${
-                    msg.role === "assistant" ? "bg-white" : "bg-gray-200"
+                    msg.role === "assistant" ? "bg-white" : ""
                   }`}
                 >
                   {msg.role === "user" ? (
-                    <motion.p
-                      initial={{ opacity: 0, translateY: -10 }}
-                      animate={{ opacity: 1, translateY: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="text-[13px]"
-                    >
-                      {msg.data}
-                    </motion.p>
+                    <motion.div className="flex flex-col items-center gag-2">
+                      {msg.image && (
+                        <Image
+                          src={msg.image}
+                          width={105}
+                          height={80}
+                          alt="label-iamge"
+                          className="rounded-lg cursor-pointer w-30 h-30"
+                          onClick={() =>{
+                             setPreview(true)
+                             setPreviewPath(msg.image)
+                            }}
+                        ></Image>
+                      )}
+                      <motion.p
+                        initial={{ opacity: 0, translateY: -10 }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="text-[13px] bg-gray-200 rounded-3xl px-4 py-3 mt-2"
+                      >
+                        {msg.data}
+                      </motion.p>
+                    </motion.div>
                   ) : msg.role === "server" ? (
-                    <div><ChatThinkingLoader className="text-black" size={20} /></div>
+                    <div>
+                      <ChatThinkingLoader className="text-black" size={20} />
+                    </div>
                   ) : msg.role === "assistant" ? (
                     <motion.div
-                      initial={{ opacity: 0, translateY: -7 }}
-                      animate={{ opacity: 1, translateY: 0 }}
+                      initial={{ opacity: 0, translateY: -7, scale: 0.8 }}
+                      animate={{ opacity: 1, translateY: 0, scale: 1 }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
                       className="space-y-4"
                     >
@@ -340,7 +387,7 @@ async function handleScanBody() {
                     <Image
                       src={path}
                       alt="label-image"
-                      className="h-full w-full rounded-xl object-fill"
+                      className="h-full w-full rounded-xl object-fill "
                       width={200}
                       height={200}
                     />
@@ -353,7 +400,7 @@ async function handleScanBody() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
+                  if (e.key === "Enter" && !e.shiftKey && !responseWait) {
                     e.preventDefault();
                     handleScanBody();
                   }
@@ -412,7 +459,9 @@ async function handleScanBody() {
 
                 <button
                   className="group shrink-0 cursor-pointer text-white flex items-center text-xs rounded-full bg-neutral-900 py-2 px-4 gap-1 duration-300 ease-in-out hover:scale-101 active:scale-90"
-                  onClick={handleScanBody}
+                  onClick={() => {
+                    handleScanBody();
+                  }}
                 >
                   <Send />
                   <span className="font-normal">send</span>
@@ -512,7 +561,7 @@ function BlockRenderer({ block }: { block: PulseBlock }) {
 
     case "ingredient":
       return (
-        <div className="rounded-xl border p-3">
+        <div className="rounded-xl border p-3 border-neutral-300 text-[13px]">
           <h3 className="font-semibold text-[14px]">{block.name}</h3>
 
           <p className="text-xs text-gray-500">{block.category}</p>
