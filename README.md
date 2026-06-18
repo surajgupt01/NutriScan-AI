@@ -1,36 +1,225 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🥗 Pulse AI
 
-## Getting Started
+AI-powered food label and ingredient analyzer that helps users understand packaged food products by scanning labels and receiving scientifically grounded insights.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-Blue)
+![Python](https://img.shields.io/badge/Python-3.11-yellow)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+- 📸 Scan and analyze food labels
+- 🧠 AI-powered ingredient interpretation
+- ⚠️ Detect additives, preservatives, and emulsifiers
+- 🥦 Explain nutritional impact of ingredients
+- 💬 Context-aware AI chat for follow-up questions
+- 📱 Responsive and mobile-friendly UI
+- ⚡ Fast analysis with structured JSON responses
+
+---
+
+## 🚀 Demo
+
+Add your deployed application link here:
+
+```text
+Frontend: https://github.com/surajgupt01/NutriScan-AI
+Backend:  https://github.com/surajgupt01/PulseBackend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Frontend
+- Next.js 15
+- React
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Axios
 
-## Learn More
+### Backend
+- FastAPI
+- Python
+- Pydantic
+- Uvicorn
 
-To learn more about Next.js, take a look at the following resources:
+### AI
+- Google Gemma API (Hugging Face)
+- Structured JSON Outputs
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏗️ Architecture
 
-## Deploy on Vercel
+```text
+User Uploads Image
+        │
+        ▼
+ Next.js Frontend
+        │
+        ▼
+ FastAPI Backend
+        │
+        ▼
+     LLM API
+        │
+        ▼
+ Ingredient Analysis
+        │
+        ▼
+ Interactive Chat UI
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📂 Project Structure
+
+```text
+label-scan-ai/
+│
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   ├── types/
+│   └── public/
+│
+├── backend/
+│   ├── routes/
+│   ├── services/
+│   ├── models/
+│   ├── prompts/
+│   └── main.py
+│
+└── README.md
+```
+
+---
+
+## 🔧 Installation
+
+### Clone the repository
+
+```bash
+git clone https://github.com/surajgupt01/NutriScan-AI
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+Frontend runs on:
+
+```text
+http://localhost:3000
+```
+
+### Backend Setup
+
+```bash
+cd backend
+
+python -m venv venv
+
+# Linux / Mac
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+
+pip install -r requirements.txt
+
+uvicorn main:app --reload
+```
+
+Backend runs on:
+
+```text
+http://localhost:8000
+```
+
+---
+
+## 🔑 Environment Variables
+
+### Frontend (`.env.local`)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/analyze
+```
+
+### Backend (`.env`)
+
+```env
+HT_TOEKN=your_api_key
+```
+
+---
+
+## 💡 How It Works
+
+1. User uploads a food label image.
+2. The image is processed by the backend.
+3. Gemini analyzes ingredients and additives.
+4. Structured JSON is generated.
+5. The frontend renders interactive blocks.
+6. Users can continue chatting with context.
+
+---
+
+## 📸 Screenshots
+
+Add screenshots here:
+
+```markdown
+![Home](./screenshots/home.png)
+![Scan](./screenshots/scan.png)
+![Analysis](./screenshots/analysis.png)
+```
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] Streaming responses
+- [ ] User authentication
+- [ ] Scan history
+- [ ] Barcode scanner integration
+- [ ] Personalized dietary recommendations
+- [ ] Ingredient safety scoring
+- [ ] Multi-language support
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+```bash
+git checkout -b feature/my-feature
+git commit -m "Add new feature"
+git push origin feature/my-feature
+```
+
+Open a Pull Request 🚀
+
+
+
+## 👨‍💻 Author
+
+**Suraj Gupta**
+
+- GitHub:   https://github.com/surajgupt01
+- LinkedIn: https://www.linkedin.com/in/suraj-gupta-1894051ba/
+
+If you found this project useful, please give it a ⭐ on GitHub!
