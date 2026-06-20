@@ -9,7 +9,15 @@ import axios from "axios";
 import { scanFeatures } from "../constants/default";
 import Logo from "../components/Logo";
 import PulseIcon from "../Icons/Pulse";
-import { ChevronsLeftRight, Search, SquarePen } from "lucide-react";
+import {
+  ChevronsLeftRight,
+  PlusIcon,
+  Search,
+  SearchAlertIcon,
+  Sparkles,
+  SquarePen,
+  TextSearch,
+} from "lucide-react";
 import { PulseBlock, PulseResponse } from "../constants/responseType";
 
 import imageCompression from "browser-image-compression";
@@ -198,16 +206,16 @@ export default function Scan() {
         </motion.div>
       )}
       <div
-        className={`fixed inset-y-0 left-0 z-50 
+        className={`fixed inset-y-0 left-0 z-50 rounded-r-3xl
            shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
              menu
-               ? "w-[min(20rem,82vw)]  bg-gray-200 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none"
+               ? "w-[min(20rem,82vw)]  bg-gray-200 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none "
                : "w-0 bg-transparent sm:w-20"
            }`}
       >
         <div className={`w-full ${menu ? "text-end" : "text-center"}`}>
           <button
-            className="cursor-pointer bg-gray-300 rounded-xl p-1 hover:bg-gray-500 duration-300 ease-in-out text-neutral-300"
+            className="cursor-pointer bg-gray-300 rounded-xl p-1 hover:bg-gray-500 group duration-300 ease-in-out text-neutral-300"
             onClick={() => {
               setMenuPanel((e) => !e);
             }}
@@ -215,35 +223,41 @@ export default function Scan() {
             <ChevronsLeftRight
               size={22}
               strokeWidth={1}
-              className="cursor-pointer text-gray-700 transition-colors duration-200 hover:text-gray-200"
+              className="cursor-pointer text-gray-700 transition-colors duration-200 group-hover:text-gray-200"
             />
           </button>
         </div>
 
         {menu && (
           <div className="flex w-full items-end justify-between">
-            <div className="flex flex-row items-end gap-1">
+            {/* <div className="flex flex-row items-end gap-1">
               <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-black font-normal text-white">
                 <PulseIcon />
               </div>
               <Logo textSize="text-md font-semibold"></Logo>
-            </div>
+            </div> */}
+            <span className="text-md text-neutral-700">Chat</span>
           </div>
         )}
 
         {menu && (
-          <div className="mt-6 flex w-full flex-1 flex-col gap-2 text-xs">
+          <div className="mt-6 flex w-full flex-1 flex-col items-start gap-2 text-xs">
             <button
               onClick={() => setChat([])}
-              className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800"
+              className="flex cursor-pointer w-[60%] hover:bg-neutral-900 hover:scale-101 active:scale-95 items-center  justify-center gap-1 p-2 duration-100 ease-in-out bg-black text-neutral-50 rounded-full "
             >
-              <SquarePen strokeWidth={1} size={20}></SquarePen>
-              <span>{"New Chat"}</span>
+              <PlusIcon size={20} strokeWidth={1}></PlusIcon>
+              <span className="text-md">{"New Chat"}</span>
+              {/* <Sparkles  size={20}></Sparkles> */}
             </button>
-            <div className="flex cursor-pointer items-end justify-start gap-1 rounded-lg p-2 duration-100 ease-in-out hover:bg-neutral-300 hover:text-neutral-800">
-              <Search strokeWidth={1} size={20}></Search>
-              <span>{"Search Chat"}</span>
-            </div>
+            <button
+              onClick={() => setChat([])}
+              className="flex cursor-pointer w-full hover:bg-neutral-200 hover:scale-101 active:scale-95 items-center  justify-start gap-1 py-2 px-4 duration-100 ease-in-out hover:text-black bg-neutral-100 text-neutral-700 rounded-xl "
+            >
+              <TextSearch size={20} strokeWidth={1}></TextSearch>
+              <span className="text-md">{"Search Chat"}</span>
+              {/* <Sparkles  size={20}></Sparkles> */}
+            </button>
           </div>
         )}
       </div>
