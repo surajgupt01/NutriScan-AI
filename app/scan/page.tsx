@@ -206,7 +206,7 @@ export default function Scan() {
         </motion.div>
       )}
       <div
-        className={`fixed inset-y-0 left-0 z-50 rounded-r-3xl
+        className={`fixed inset-y-0 left-0 z-250 rounded-r-3xl
            shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
              menu
                ? "w-[min(20rem,82vw)]  bg-gray-200 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none "
