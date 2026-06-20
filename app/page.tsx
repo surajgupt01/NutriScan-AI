@@ -1,21 +1,17 @@
 import Link from "next/link";
-import Features from "./components/Features";
-import ScoreCard from "./components/HealthScore";
-import HeroSection from "./components/HeroSection";
-import Image from "next/image";
 import Logo from "./components/Logo";
-import PulseIcon from "./Icons/Pulse";
+import { Activity, Cookie } from "lucide-react";
+import Footer from "./components/Footer";
+import HowItWorks from "./components/Features";
+import HeroSection from "./components/HeroSection";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center gap-4  bg-zinc-100  h-auto">
+    <div className="flex flex-col flex-1 items-center gap-4  bg-white  h-auto">
       <div className="flex items-center justify-between  p-1 w-full px-6 py-4">
-        <h1 className="text-2xl font-bold tracking-wide flex items-center gap-1">
-          <div className="bg-black flex items-center justify-center lg:rounded-xl rounded-md text-white lg:h-8 lg:w-8 h-5 w-5">
-            <PulseIcon />
-          </div>
-          <Logo textSize="lg:text-xl text-sm"></Logo>
-        </h1>
+        <h2 className="text-2xl font-bold tracking-tight text-neutral-600">
+          Pulse<span className="text-lime-400">.</span>
+        </h2>
 
         <div className="flex items-center gap-2 justify-between">
           <div className="cursor-pointer  text-xs hover:bg-neutral-200 hover:text-neutral-800 rounded-full border border-white duration-300 ease-in-out py-3 px-6  font-semibold">
@@ -32,15 +28,18 @@ export default function Home() {
 
       {/* Hero section */}
 
-      <section className="w-full h-150 lg:min-h-screen bg-linear-to-b from-neutral-100 via-neutral-200 to-neutral-100 overflow-hidden ">
-        <div className="max-w-7xl mx-auto flex flex-col items-center px-2">
+      <section className="w-full h-auto lg:min-h-screen overflow-hidden ">
+        <div className="max-w-8xl mx-auto flex flex-col items-center lg:px-2 px-4 py-4">
           {/* Text */}
-          <div className="text-center max-w-4xl mx-auto mb-12 md:mb-16">
-            <span className="px-4 py-1 rounded-full bg-lime-500/10 text-lime-600 text-sm font-medium">
+          <div className="text-center max-w-4xl mx-auto mb-12 md:mb-16 flex justify-center flex-col items-center">
+            {/* <span className="rounded-full bg-gray-100 shadow-sm flex items-center gap-2 justify-center text-lime-500 text-sm font-medium max-w-60 p-2 ">
+              <span>
+                <HeartHandshake />
+              </span>
               AI-Powered Food Analysis
-            </span>
+            </span> */}
 
-            <h2 className="mt-6 text-xl md:text-3xl font-bold tracking-wider">
+            <h2 className="mt-6 text-2xl md:text-4xl font-bold tracking-wider">
               {` Understand What's Really`}
               <span className="bg-linear-to-r from-lime-500 to-emerald-500 bg-clip-text text-transparent">
                 {" "}
@@ -48,152 +47,100 @@ export default function Home() {
               </span>
             </h2>
 
-            <p className="mt-4 text-sm text-neutral-600 max-w-xl mx-auto tracking-wide">
+            <p className="mt-4 text-md text-neutral-600 max-w-xl mx-auto tracking-wide">
               Scan ingredient labels, uncover hidden additives, and get instant
               AI-powered health insights before you buy.
             </p>
           </div>
 
-          {/* Dashboard Preview */}
+          <div className="flex lg:flex-row flex-col-reverse items-center justify-between gap-4 lg:w-[75%] w-full scale-90">
+            <div className="flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-700 mb-3">
+                AI Powered Food Intelligence
+              </p>
 
-          <div className="backdrop-blur-xl relative  lg:p-6 p-4 rounded-4xl shadow-[0_0_80px_rgba(132,204,22,0.3)] ">
-              <div className="absolute inset-0 bg-lime-500/30 blur-3xl -z-10"></div>
+              <h1 className="lg:text-5xl text-3xl font-bold leading-tight text-neutral-950">
+                {` Know What's`}
+                <span className="block text-green-800">Really Inside</span>
+                Your Food
+              </h1>
 
-            <Image alt="dashboard" width={870} height={1000} className="rounded-xl shadow-2xl  shadow-neutral-400 lg:h-[65vh] h-[28vh] sm:w-[64vw] w-[95vw] " src={'/ChatInterface.png'}></Image>
+              <p className="mt-5 text-sm text-neutral-600 leading-relaxed">
+                Scan food labels and instantly understand ingredients,
+                additives, nutrition facts, sugar levels, and potential health
+                concerns with AI-powered analysis.
+              </p>
+
+              <div className="flex gap-6 mt-8">
+                <div>
+                  <h3 className="text-2xl font-bold">Instant</h3>
+                  <p className="text-sm text-neutral-700">
+                    Ingredient Analysis
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold">AI</h3>
+                  <p className="text-sm text-neutral-700">Health Insights</p>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold">Smart</h3>
+                  <p className="text-sm text-neutral-700">Nutrition Reports</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:w-[50%] w-full h-150 p-4 bg-linear-to-tl from-neutral-950 via-green-300 to-lime-200 rounded-2xl  flex justify-center items-center">
+              <div className="w-90 h-100 rounded-2xl px-4 py-8 backdrop-blur-lg bg-transparent shadow-xl flex flex-col gap-4">
+                {/* Header */}
+                <div className="flex items-center gap-2">
+                  <div className="bg-black p-2 rounded-xl w-8 h-8 text-white flex items-center justify-center">
+                    <Activity />
+                  </div>
+                  <Logo textSize="xs" />
+                </div>
+
+                {/* AI Message */}
+                <div className="flex justify-start">
+                  <div className="max-w-[75%] rounded-xl rounded-tl-none bg-white/60 text-black text-xs px-3 py-2">
+                    {` Hi! Upload a food label and I'll analyze ingredients,
+                  nutrition facts, and potential health concerns.`}
+                  </div>
+                </div>
+
+                {/* User Message */}
+                <div className="flex justify-end">
+                  <div className="max-w-[75%] rounded-xl rounded-tr-none bg-black text-white text-xs px-3 py-2">
+                    Is this product healthy for daily consumption?
+                  </div>
+                </div>
+
+                {/* AI Message */}
+                <div className="flex justify-start">
+                  <div className="max-w-[75%] rounded-xl rounded-tl-none bg-white/60 text-black text-xs px-3 py-2">
+                    {` I'll check the ingredients, additives, sugar content, and
+                  nutritional profile to help you decide.`}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
         </div>
       </section>
 
-      {/*Health  card section */}
-
-      <ScoreCard />
-
-      {/* Feature Section */}
-
-      <div className="lg:py-20 flex flex-col items-center gap-10 lg:my-8 bg-linear-to-b from-zinc-100 via-lime-200/80 to-zinc-100 px-6">
-        <h1 className="lg:text-4xl text-xl font-bold w-full text-left">
-          {"Inside the Box"}
-        </h1>
-
-        <Features />
+      <div className="flex items-center justify-center gap-4 flex-col mt-10 px-4 ">
+        <div className="text-sm font-extralight text-green-600">{`How it works`}</div>
+        <div className="lg:text-3xl  text-xl text-center text-neutral-900 font-bold tracking-normal">{`From food label to informed decision in seconds.`}</div>
+        <div className="lg:text-xl text-md text-center  text-neutral-500 tracking-wide font-light">
+          {`Scan labels, decode ingredients, and make healthier decisions with confidence—all in seconds.`}
+        </div>
+        <HowItWorks />
       </div>
 
       <HeroSection />
 
-      {/* {'Footer section'} */}
-
-      <footer className="bg-black w-full  px-8 py-14 md:px-16 lg:px-24">
-        {/* Top Section */}
-        <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
-          {/* Brand */}
-          <div className="max-w-sm">
-            <h1 className="text-3xl font-semibold text-white tracking-tight">
-              Pulse
-            </h1>
-
-            <p className="mt-4 text-sm leading-6 text-neutral-400">
-              AI-powered product label intelligence for healthier and smarter
-              decisions.
-            </p>
-
-            <button className="mt-6 rounded-full bg-lime-400 px-5 py-3 text-sm font-medium text-black transition-all duration-300 hover:scale-[1.03]">
-              Start Scanning
-            </button>
-          </div>
-
-          {/* Links */}
-          <div className="grid grid-cols-2 gap-10 md:grid-cols-3">
-            {/* Product */}
-            <div>
-              <h3 className="text-sm font-semibold text-white">Product</h3>
-
-              <ul className="mt-4 space-y-3 text-sm text-neutral-400">
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Features
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Insights
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  API
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Pricing
-                </li>
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <h3 className="text-sm font-semibold text-white">Resources</h3>
-
-              <ul className="mt-4 space-y-3 text-sm text-neutral-400">
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Documentation
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Guides
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Blog
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Support
-                </li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h3 className="text-sm font-semibold text-white">Company</h3>
-
-              <ul className="mt-4 space-y-3 text-sm text-neutral-400">
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  About
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Contact
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Privacy
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  Terms
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative mt-24 overflow-hidden">
-          <h1 className="select-none text-center text-[120px] md:text-[180px] lg:text-[260px] font-black tracking-tight leading-none bg-linear-to-b from-white/20 to-white/5 bg-clip-text text-transparent">
-            PULSE
-          </h1>
-        </div>
-
-        {/* Divider */}
-        <div className="mt-14 h-px w-full bg-white/10" />
-
-        {/* Bottom */}
-        <div className="mt-6 flex flex-col gap-4 text-sm text-neutral-500 md:flex-row md:items-center md:justify-between">
-          <p>© 2026 Pulse. Built for smarter product decisions.</p>
-
-          <div className="flex items-center gap-6">
-            <span className="cursor-pointer hover:text-white transition-colors">
-              Twitter
-            </span>
-
-            <span className="cursor-pointer hover:text-white transition-colors">
-              GitHub
-            </span>
-
-            <span className="cursor-pointer hover:text-white transition-colors">
-              LinkedIn
-            </span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

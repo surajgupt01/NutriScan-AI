@@ -5,7 +5,7 @@ import { useRef } from "react";
 import HealthCard from "./HealthCards";
 import { packedItems } from "../constants/default";
 import { motion, useScroll, useTransform } from "motion/react";
-import { Check, Wheat, CandyOff, Leaf, HelpCircle, Bone } from "lucide-react";
+import { Check, Wheat, CandyOff, Leaf, HelpCircle, Bone , Candy , Scale , Factory , WheatOff , AlertTriangle } from "lucide-react";
 
 export default function ScoreCard() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,10 +23,10 @@ export default function ScoreCard() {
       ref={containerRef}
       className="relative flex min-h-[680px] w-full flex-col items-center overflow-hidden px-4 py-14 perspective-[1000px] sm:min-h-[760px] sm:px-6 sm:py-16 lg:min-h-[900px] lg:px-8 lg:py-24 "
     >
-      <h1 className="z-10 text-center text-3xl font-bold leading-tight text-neutral-800 sm:text-4xl lg:text-5xl">
+      <h1 className="z-10 text-center text-lg font-bold tracking-wide text-neutral-800 sm:text-4xl lg:text-3xl">
         Your health score card
       </h1>
-      <p className="z-10 mt-3 max-w-[32rem] text-center text-sm leading-6 text-neutral-500 sm:text-base lg:text-sm">
+      <p className="z-10 mt-3 max-w-[30rem] text-center text-sm leading-6 text-neutral-500 sm:text-base lg:text-sm">
         {`Instant AI-powered analysis of your favorite groceries. We decode the labels so you don't have to.`}
       </p>
 
@@ -48,7 +48,7 @@ export default function ScoreCard() {
             source={packedItems[3].source}
             title={packedItems[3].title}
             score={packedItems[3].score}
-            deg="relative z-[200] h-[18.5rem] w-[13.25rem] rotate-0 bg-lime-400/50 shadow-xl sm:h-80 sm:w-56 lg:h-95 lg:w-65 backdrop-blur-sm"
+            deg="relative z-[200] h-[18.5rem] w-[13.25rem] rotate-0 bg-lime-400/90 shadow-xl sm:h-80 sm:w-56 lg:h-95 lg:w-65 backdrop-blur-md"
           />
         </motion.div>
       </div>
@@ -58,14 +58,14 @@ export default function ScoreCard() {
 
 const orbitItems1: OrbitItem[] = [
   { text: "High Protein", angle: 20 },
-  { text: "Low Sugar", angle: 200 },
-  { text: "Low", angle: 120 },
+  { text: "Low Sugar", angle: 140 },
+  { text: "Balanced Nutrition", angle: 260 },
 ];
 
 const orbitItems2: OrbitItem[] = [
-  { text: "Good Fiber", angle: 120 },
-  { text: "Low Sodium", angle: 300 },
-  { text: "Low Protein", angle: 250 },
+  { text: "Good Fiber", angle: 80 },
+  { text: "Low Sodium", angle: 220 },
+  { text: "Low Protein", angle: 340 },
 ];
 
 type OrbitItem = {
@@ -80,7 +80,7 @@ function ItemsCard() {
         radiusClass="[--orbit-radius:8.25rem] sm:[--orbit-radius:12.5rem] lg:[--orbit-radius:15.625rem]"
         duration={25}
         items={orbitItems1}
-        borderColor="border-lime-200"
+        borderColor="border-neutral-200"
       />
 
       <OrbitRing
@@ -88,7 +88,7 @@ function ItemsCard() {
         duration={20}
         reverse
         items={orbitItems2}
-        borderColor="border-cyan-200"
+        borderColor="border-gray-200"
       />
     </div>
   );
@@ -117,7 +117,7 @@ function OrbitRing({
         repeat: Infinity,
         ease: "linear",
       }}
-      className={`absolute h-[calc(var(--orbit-radius)*2)] w-[calc(var(--orbit-radius)*2)] rounded-full border ${borderColor} ${radiusClass}`}
+      className={`absolute h-[calc(var(--orbit-radius)*2)] w-[calc(var(--orbit-radius)*2)] rounded-full border ${borderColor} -z-100 ${radiusClass}`}
     >
       {items.map((item) => (
         <div
@@ -151,20 +151,64 @@ function OrbitRing({
 }
 
 function Label({ text }: { text: string }) {
-  const iconMap: Record<string, {icon : ReactNode , color : string}> = {
-    "High Protein":{icon :  <Check size={18} /> , color : 'bg-red-200 text-red-600'},
-    "Low Sugar": {icon : <CandyOff size={18} /> , color : 'bg-yellow-100 text-yellow-600'},
-    "Good Fiber": {icon : <Wheat size={18} /> , color : 'bg-taupe-100 text-taupe-600'},
-    "Low Sodium": {icon : <Leaf size={18} /> , color : 'bg-green-100 text-green-600'},
-    "Low Protein": {icon : <Bone size={18} /> , color : 'bg-blue-100 text-blue-600'},
-    "Low": {icon : <Leaf size={18} /> , color : 'bg-green-100 text-green-600'},
-  };
+  const iconMap: Record<string, { icon: ReactNode; color: string }> = {
+    "High Protein": {
+      icon: <Check size={18} />,
+      color: "bg-green-100 text-green-600",
+    },
 
+    "Low Sugar": {
+      icon: <CandyOff size={18} />,
+      color: "bg-green-100 text-green-600",
+    },
+
+    "Good Fiber": {
+      icon: <Wheat size={18} />,
+      color: "bg-green-100 text-green-600",
+    },
+
+    "Low Sodium": {
+      icon: <Leaf size={18} />,
+      color: "bg-green-100 text-green-600",
+    },
+
+    "High Sugar": {
+      icon: <Candy size={18} />,
+      color: "bg-red-100 text-red-600",
+    },
+
+    "High Sodium": {
+      icon: <AlertTriangle size={18} />,
+      color: "bg-red-100 text-red-600",
+    },
+
+    "Low Protein": {
+      icon: <Bone size={18} />,
+      color: "bg-yellow-100 text-yellow-600",
+    },
+
+    "Low Fiber": {
+      icon: <WheatOff size={18} />,
+      color: "bg-yellow-100 text-yellow-600",
+    },
+
+    "Balanced Nutrition": {
+      icon: <Scale size={18} />,
+      color: "bg-blue-100 text-blue-600",
+    },
+
+    "Highly Processed": {
+      icon: <Factory size={18} />,
+      color: "bg-orange-100 text-orange-600",
+    },
+  };
   const IconToRender = iconMap[text].icon || <HelpCircle size={18} />;
-  const IconColor = iconMap[text].color
+  const IconColor = iconMap[text].color;
   return (
-    <div className="flex items-center gap-1.5 rounded-full border border-neutral-100 bg-white px-2 py-1 shadow-xl sm:gap-2 sm:px-3 sm:py-2 lg:gap-3 lg:px-5 lg:py-3">
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${IconColor}  sm:h-8 sm:w-8`}>
+    <div className="flex items-center gap-1.5 z-100 rounded-full border border-neutral-100 bg-white px-2 py-1 shadow-xl sm:gap-2 sm:px-3 sm:py-2 lg:gap-3 lg:px-5 lg:py-3">
+      <div
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${IconColor}  sm:h-8 sm:w-8`}
+      >
         {IconToRender}
       </div>
 
