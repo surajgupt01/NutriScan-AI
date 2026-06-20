@@ -102,7 +102,7 @@ export default function Scan() {
       {
         role: "user",
         data: userMsg,
-        image : path ? path : null
+        image: path ? path : null,
       },
     ];
 
@@ -129,7 +129,7 @@ export default function Scan() {
         image: base64,
         contextofChat: contextChat, // no loading message
       });
-      console.log("response data ---> ",response)
+      console.log("response data ---> ", response);
       const parsedResponse: PulseResponse = JSON.parse(response.data.response);
 
       // Remove loading and add assistant response
@@ -174,7 +174,7 @@ export default function Scan() {
   const [imageUpload, setImgUpload] = useState(false);
 
   const [imagePreview, setPreview] = useState(false);
-  const [previewPath , setPreviewPath] = useState<string|null>()
+  const [previewPath, setPreviewPath] = useState<string | null>();
 
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100 relative">
@@ -186,14 +186,15 @@ export default function Scan() {
           onClick={() => setPreview(false)}
           className="w-full h-full backdrop-blur-sm flex justify-center items-center absolute z-100 bg-black/10"
         >
-          {previewPath ?
-          <Image
-            src={previewPath}
-            width={250}
-            height={250}
-            className="duration-300 ease-in-out w-80 h-80"
-            alt="product-label-image"
-          ></Image> : null}
+          {previewPath ? (
+            <Image
+              src={previewPath}
+              width={250}
+              height={250}
+              className="duration-300 ease-in-out w-80 h-80"
+              alt="product-label-image"
+            ></Image>
+          ) : null}
         </motion.div>
       )}
       <div
@@ -304,17 +305,17 @@ export default function Scan() {
                 <motion.div
                   initial={{
                     opacity: 0,
-                    translateY: -5,
-                    translateX: 15,
+                    translateY: 35,
+
                     scale: 0,
                   }}
                   animate={{
                     opacity: 1,
                     translateY: 0,
-                    translateX: 0,
+
                     scale: 1,
                   }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
                   className={`max-w-[80%] rounded-3xl px-4 py-3 ${
                     msg.role === "assistant" ? "bg-white" : ""
                   }`}
@@ -328,10 +329,10 @@ export default function Scan() {
                           height={80}
                           alt="label-iamge"
                           className="rounded-lg cursor-pointer w-30 h-30"
-                          onClick={() =>{
-                             setPreview(true)
-                             setPreviewPath(msg.image)
-                            }}
+                          onClick={() => {
+                            setPreview(true);
+                            setPreviewPath(msg.image);
+                          }}
                         ></Image>
                       )}
                       <motion.p
@@ -349,8 +350,8 @@ export default function Scan() {
                     </div>
                   ) : msg.role === "assistant" ? (
                     <motion.div
-                      initial={{ opacity: 0, translateY: -7, scale: 0.8 }}
-                      animate={{ opacity: 1, translateY: 0, scale: 1 }}
+                      initial={{ opacity: 0, translateX: -10 }}
+                      animate={{ opacity: 1, translateX: 0 }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
                       className="space-y-4"
                     >
@@ -460,7 +461,7 @@ export default function Scan() {
                 <button
                   className="group shrink-0 cursor-pointer text-white flex items-center text-xs rounded-full bg-neutral-900 py-2 px-4 gap-1 duration-300 ease-in-out hover:scale-101 active:scale-90"
                   onClick={() => {
-                    handleScanBody();
+                    if (!responseWait) handleScanBody();
                   }}
                 >
                   <Send />

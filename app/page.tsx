@@ -7,7 +7,7 @@ import HeroSection from "./components/HeroSection";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center gap-4  bg-white  h-auto">
+    <div className="flex flex-col flex-1 items-center gap-4  bg-white  h-auto scroll-smooth">
       <div className="flex items-center justify-between  p-1 w-full px-6 py-4">
         <h2 className="text-2xl font-bold tracking-tight text-neutral-600">
           Pulse<span className="text-lime-400">.</span>
