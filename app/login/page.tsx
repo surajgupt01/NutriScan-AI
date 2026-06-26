@@ -68,7 +68,7 @@ export default function LoginPage() {
           {`Continue with `} <GoogleIcon className="lg:size-5 size-4.8 " />
         </motion.div>
         <motion.div variants={child} className="mt-4 flex justify-center">
-          <p className="w-[60%] text-xs text-neutral-400 text-center hover:text-neutral-700 duration-300 ease-in-out cursor-pointer">{`By continuing, you agree to our Terms of Service and Privacy Policy.`}</p>
+          <p className="w-[60%] text-xs text-neutral-400 text-center hover:text-neutral-700 duration-300 ease-in-out cursor-pointer group">{`By continuing, you agree to our`} <span className="text-lime-500 group-hover:text-lime-800"> Terms of Service and Privacy Policy.</span></p>
         </motion.div>
       </motion.div>
       {/* <div className="w-full h-full bg-linear-to-br from-lime-400 via-green-400 to-neutral-800 flex justify-center items-center">
