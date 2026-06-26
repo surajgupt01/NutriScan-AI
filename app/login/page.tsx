@@ -35,7 +35,7 @@ export default function LoginPage() {
         initial="hidden"
         animate="visible"
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="w-full h-full flex flex-col justify-center items-center gap-4 py-12  "
+        className="w-full h-full flex flex-col justify-start items-center gap-4 py-12  "
       >
         <motion.div
           variants={child}
