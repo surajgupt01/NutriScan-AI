@@ -1,5 +1,10 @@
+"use client"
+
+import { useRouter } from "next/navigation";
 
 export default function Footer() {
+
+  const router = useRouter()
   return (
     <footer className="w-full border-t border-neutral-200 bg-neutral-50">
       <div className="mx-auto max-w-9xl px-6 py-16 sm:px-10 md:px-16 lg:px-10">
@@ -17,6 +22,7 @@ export default function Footer() {
             </p>
 
             <button
+              onClick={()=>router.push('/login')}
               className="
                 mt-6
                 rounded-full
