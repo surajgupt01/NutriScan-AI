@@ -2,8 +2,11 @@
 
 import { GoogleIcon } from "../Icons/Google";
 import { motion } from "motion/react";
-
+import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { useState } from "react";
 export default function LoginPage() {
+  const [email, setEmail] = useState<string | null>(null);
+
   const parent = {
     visible: {
       opacity: 1,
@@ -23,6 +26,31 @@ export default function LoginPage() {
       translateY: 0,
     },
     hidden: { opacity: 0, translateY: 10 },
+  };
+
+  const supabase = SupabaseBrowserClient();
+
+  const handleGoogleAuth = async () => {
+    if (email) {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: email,
+      });
+
+      console.log(data);
+    }
+  };
+
+  const handleEmailAuth = async () => {
+    if (email) {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: "http://localhost:3000/auth/callback",
+        },
+      });
+
+      console.log(data);
+    }
   };
 
   return (
@@ -49,26 +77,47 @@ export default function LoginPage() {
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-1 mt-8">
               <label className="text-sm font-semibold">Email</label>
-              <input className="w-full h-10 py-2 px-4 rounded-full border text-neutral-700 text-sm border-neutral-300 outline-neutral-600"></input>
+              <input
+                onChange={(e) => setEmail(e.currentTarget.value)}
+                className="w-full h-10 py-2 px-4 rounded-full border text-neutral-700 text-sm border-neutral-300 outline-neutral-600"
+              ></input>
             </div>
 
             <div className="w-full flex justify-center">
-              <button className="w-[90%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-800 bg-black px-3 text-white rounded-full duration-300 ease-in-out text-md active:scale-95">{`Log In`}</button>
+              <button
+                onClick={handleEmailAuth}
+                className="w-[90%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-800 bg-black px-3 text-white rounded-full duration-300 ease-in-out text-md active:scale-95"
+              >{`Log In`}</button>
             </div>
           </div>
         </motion.div>
-        <motion.div variants={child} className="lg:w-[30%] w-[70%]  gap-2 flex items-center justify-center py-4 px-10">
+        <motion.div
+          variants={child}
+          className="lg:w-[30%] w-[70%]  gap-2 flex items-center justify-center py-4 px-10"
+        >
           <div className="w-full border border-neutral-300"></div>
           <div className="w-auto text-sm font-semibold text-neutral-700">
             {"OR"}
           </div>
           <div className="w-full border border-neutral-300"></div>
         </motion.div>
-        <motion.div variants={child} className="lg:w-[20%] w-[60%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-100 px-3 border border-neutral-200 duration-300 ease-in-out text-neutral-800  rounded-full text-md flex items-center justify-center gap-1 active:scale-95">
+        <motion.button
+          onClick={() => {
+            handleGoogleAuth;
+          }}
+          variants={child}
+          className="lg:w-[20%] w-[60%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-100 px-3 border border-neutral-200 duration-300 ease-in-out text-neutral-800  rounded-full text-md flex items-center justify-center gap-1 active:scale-95"
+        >
           {`Continue with `} <GoogleIcon className="lg:size-5 size-4.8 " />
-        </motion.div>
+        </motion.button>
         <motion.div variants={child} className="mt-4 flex justify-center">
-          <p className="w-[60%] text-xs text-neutral-400 text-center hover:text-neutral-700 duration-300 ease-in-out cursor-pointer group">{`By continuing, you agree to our`} <span className="text-lime-500 group-hover:text-lime-800"> Terms of Service and Privacy Policy.</span></p>
+          <p className="w-[60%] text-xs text-neutral-400 text-center hover:text-neutral-700 duration-300 ease-in-out cursor-pointer group">
+            {`By continuing, you agree to our`}{" "}
+            <span className="text-lime-500 group-hover:text-lime-800">
+              {" "}
+              Terms of Service and Privacy Policy.
+            </span>
+          </p>
         </motion.div>
       </motion.div>
       {/* <div className="w-full h-full bg-linear-to-br from-lime-400 via-green-400 to-neutral-800 flex justify-center items-center">
