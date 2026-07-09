@@ -3,26 +3,20 @@
 import Image from "next/image";
 import Camera from "../Icons/Camera";
 import Send from "../Icons/Send";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import CrossIcon from "../Icons/Cross";
 import axios from "axios";
 import { scanFeatures } from "../constants/default";
-import Logo from "../components/Logo";
-import PulseIcon from "../Icons/Pulse";
-import {
-  ChevronsLeftRight,
-  PlusIcon,
-  Search,
-  SearchAlertIcon,
-  Sparkles,
-  SquarePen,
-  TextSearch,
-} from "lucide-react";
+import { ChevronsLeftRight, PlusIcon, TextSearch } from "lucide-react";
 import { PulseBlock, PulseResponse } from "../constants/responseType";
 
 import imageCompression from "browser-image-compression";
 import { motion } from "motion/react";
 import ChatThinkingLoader from "../Icons/Loading";
+import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+
 
 async function processImage(file: File): Promise<File> {
   let processedFile = file;
@@ -184,6 +178,38 @@ export default function Scan() {
   const [imagePreview, setPreview] = useState(false);
   const [previewPath, setPreviewPath] = useState<string | null>();
 
+  const supabase = SupabaseBrowserClient();
+
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setUser(user);
+    }
+
+    loadUser();
+  }, []);
+
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (!error) {
+      router.push("/login");
+    }
+  };
+
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100 relative">
       {imagePreview && (
@@ -241,23 +267,53 @@ export default function Scan() {
         )}
 
         {menu && (
-          <div className="mt-6 flex w-full flex-1 flex-col items-start gap-2 text-xs">
+          <div className="mt-6 flex h-full w-full flex-1 flex-col items-start gap-2 text-xs pb-20">
+            {/* Top Actions */}
             <button
               onClick={() => setChat([])}
-              className="flex cursor-pointer w-[60%] hover:bg-neutral-900 hover:scale-101 active:scale-95 items-center  justify-center gap-1 p-2 duration-100 ease-in-out bg-black text-neutral-50 rounded-full "
+              className="flex w-[60%] cursor-pointer items-center justify-center gap-1 rounded-full bg-black p-2 text-neutral-50 duration-100 ease-in-out hover:scale-101 hover:bg-neutral-900 active:scale-95"
             >
-              <PlusIcon size={20} strokeWidth={1}></PlusIcon>
-              <span className="text-md">{"New Chat"}</span>
-              {/* <Sparkles  size={20}></Sparkles> */}
+              <PlusIcon size={20} strokeWidth={1} />
+              <span className="text-md">New Chat</span>
             </button>
+
             <button
               onClick={() => setChat([])}
-              className="flex cursor-pointer w-full hover:bg-neutral-200 hover:scale-101 active:scale-95 items-center  justify-start gap-1 py-2 px-4 duration-100 ease-in-out hover:text-black bg-neutral-100 text-neutral-700 rounded-xl "
+              className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-xl bg-neutral-100 px-4 py-2 text-neutral-700 duration-100 ease-in-out hover:scale-101 hover:bg-neutral-200 hover:text-black active:scale-95"
             >
-              <TextSearch size={20} strokeWidth={1}></TextSearch>
-              <span className="text-md">{"Search Chat"}</span>
-              {/* <Sparkles  size={20}></Sparkles> */}
+              <TextSearch size={20} strokeWidth={1} />
+              <span className="text-md">Search Chat</span>
             </button>
+
+            {/* Push everything below to the bottom */}
+            <div className="mt-auto w-full border-t border-neutral-200 pt-4">
+              <div className="mb-3 flex items-center gap-3">
+                <Image
+                  src={user?.user_metadata?.avatar_url || "/default-avatar.png"}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-neutral-900">
+                    {user?.user_metadata?.full_name || "User"}
+                  </p>
+
+                  <p className="truncate text-xs text-neutral-500">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleSignOut}
+                className="flex w-[80%] items-center justify-center rounded-xl border border-red-200 px-4 py-2 text-xs text-red-600 transition hover:bg-red-50"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         )}
       </div>

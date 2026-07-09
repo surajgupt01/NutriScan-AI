@@ -3,9 +3,13 @@
 import { GoogleIcon } from "../Icons/Google";
 import { motion } from "motion/react";
 import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 export default function LoginPage() {
   const [email, setEmail] = useState<string | null>(null);
+
+  const [status, setStatus] = useState(false);
+
+  const [countdown, setCountDown] = useState(0);
 
   const parent = {
     visible: {
@@ -31,27 +35,48 @@ export default function LoginPage() {
   const supabase = SupabaseBrowserClient();
 
   const handleGoogleAuth = async () => {
-    if (email) {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: email,
-      });
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
 
-      console.log(data);
-    }
+    // console.log("data:", data);
+
+    // if (error) {
+    //   console.error("OAuth Error:", error);
+    // }
   };
-
   const handleEmailAuth = async () => {
     if (email) {
+      setStatus(false);
+      setCountDown(30);
+
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: "http://localhost:3000/auth/callback",
         },
       });
+      setStatus(true);
 
       console.log(data);
+    } else {
     }
   };
+
+  useEffect(() => {
+    if (countdown === 0) {
+      setStatus(false);
+      return;
+    }
+    const timer = setInterval(() => {
+      setCountDown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   return (
     <div className="w-full h-screen flex flex-col items-start p-6 justify-between bg-white">
@@ -78,7 +103,10 @@ export default function LoginPage() {
             <div className="flex flex-col gap-1 mt-8">
               <label className="text-sm font-semibold">Email</label>
               <input
-                onChange={(e) => setEmail(e.currentTarget.value)}
+                onChange={(e) => {
+                  setEmail(e.currentTarget.value);
+                  setStatus(false);
+                }}
                 className="w-full h-10 py-2 px-4 rounded-full border text-neutral-700 text-sm border-neutral-300 outline-neutral-600"
               ></input>
             </div>
@@ -86,10 +114,14 @@ export default function LoginPage() {
             <div className="w-full flex justify-center">
               <button
                 onClick={handleEmailAuth}
-                className="w-[90%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-800 bg-black px-3 text-white rounded-full duration-300 ease-in-out text-md active:scale-95"
+                disabled={countdown > 0}
+                className={`w-[90%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-800 bg-black px-3 text-white rounded-full duration-300 ease-in-out text-md active:scale-95 ${countdown > 0 ? "bg-neutral-700 active:scale-100 hover:bg-neutral-700" : ""}`}
               >{`Log In`}</button>
             </div>
           </div>
+          {status && (
+            <div className="text-xs max-w-xl text-gray-600 text-center duration-300 ease-in-out leading-6">{`We've sent a secure sign-in link to ${email}. Click the link in the email to sign in to Pulse AI.If didn't receive the mail retry after ${countdown}`}</div>
+          )}
         </motion.div>
         <motion.div
           variants={child}
@@ -103,7 +135,7 @@ export default function LoginPage() {
         </motion.div>
         <motion.button
           onClick={() => {
-            handleGoogleAuth;
+            handleGoogleAuth();
           }}
           variants={child}
           className="lg:w-[20%] w-[60%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-100 px-3 border border-neutral-200 duration-300 ease-in-out text-neutral-800  rounded-full text-md flex items-center justify-center gap-1 active:scale-95"
