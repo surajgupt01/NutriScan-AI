@@ -1,182 +1,98 @@
-"use client"
+"use client";
 
 import { useRouter } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
+  const router = useRouter();
 
-  const router = useRouter()
   return (
-    <footer className="w-full border-t border-neutral-200 bg-neutral-50">
-      <div className="mx-auto max-w-9xl px-6 py-16 sm:px-10 md:px-16 lg:px-10">
-        {/* Top Section */}
-        <div className="flex flex-col gap-14 lg:flex-row lg:justify-between lg:items-start">
-          {/* Brand */}
-          <div className="max-w-sm flex flex-col items-center text-center lg:items-start lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight text-neutral-700">
-              Pulse<span className="text-lime-400">.</span>
-            </h2>
-
-            <p className="mt-4 text-sm leading-relaxed text-neutral-500">
-              AI-powered product label intelligence built for healthier,
-              smarter consumer choices.
+    <footer className="w-full border-t border-neutral-100 bg-white text-neutral-900 antialiased">
+      <div className="mx-auto max-w-4xl px-4 py-12">
+        
+        {/* ── Main Content Row ── */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          
+          {/* Brand & Purpose */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold tracking-tight text-neutral-900">
+                Pulse
+              </span>
+              <span className="h-1.5 w-1.5 rounded-full bg-neutral-400" />
+              <span className="text-[10px] font-mono text-neutral-400">
+                v2.4
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-neutral-500 max-w-xs leading-relaxed">
+              AI label intelligence built for verified ingredients and clear nutrition choices.
             </p>
+          </div>
 
+          {/* Navigation Links */}
+          <nav className="flex flex-wrap justify-center gap-5 text-[11px] font-medium text-neutral-600">
+            <a href="#features" className="hover:text-neutral-900 transition-colors">
+              Features
+            </a>
+            <a href="#insights" className="hover:text-neutral-900 transition-colors">
+              Insights
+            </a>
+            <a href="#privacy" className="hover:text-neutral-900 transition-colors">
+              Privacy
+            </a>
+            <a href="#terms" className="hover:text-neutral-900 transition-colors">
+              Terms
+            </a>
+          </nav>
+
+          {/* Direct Action Button */}
+          <div className="flex justify-center md:justify-end">
             <button
-              onClick={()=>router.push('/login')}
-              className="
-                mt-6
-                rounded-full
-                bg-lime-400
-                px-6
-                py-3
-                text-sm
-                font-semibold
-                text-black
-                transition-all
-                duration-300
-                hover:bg-lime-300
-                hover:shadow-[0_0_20px_rgba(163,230,53,0.25)]
-              "
+              type="button"
+              onClick={() => router.push("/scan")}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-neutral-900 text-neutral-50 text-[11px] font-medium hover:bg-neutral-800 active:scale-95 transition-all shadow-2xs"
             >
-              Start Scanning
+              <span>Start Scanning</span>
+              <ArrowUpRight className="w-3 h-3 text-neutral-400" />
             </button>
           </div>
-
-          {/* Mobile Divider */}
-          <div className="h-px w-full bg-neutral-200 lg:hidden" />
-
-          {/* Links */}
-          <div className="grid w-full grid-cols-2 gap-10 sm:grid-cols-3 lg:w-auto lg:gap-16">
-            {/* Product */}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Product
-              </h3>
-
-              <ul className="mt-5 space-y-3 text-sm text-neutral-600">
-                {["Features", "Insights", "API", "Pricing"].map((item) => (
-                  <li key={item}>
-                    <a
-                      href={`#${item.toLowerCase()}`}
-                      className="transition-colors duration-200 hover:text-black"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Resources
-              </h3>
-
-              <ul className="mt-5 space-y-3 text-sm text-neutral-600">
-                {["Documentation", "Guides", "Blog", "Support"].map((item) => (
-                  <li key={item}>
-                    <a
-                      href={`#${item.toLowerCase()}`}
-                      className="transition-colors duration-200 hover:text-black"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div className="col-span-2 sm:col-span-1">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Company
-              </h3>
-
-              <ul className="mt-5 space-y-3 text-sm text-neutral-600">
-                {["About", "Contact", "Privacy", "Terms"].map((item) => (
-                  <li key={item}>
-                    <a
-                      href={`#${item.toLowerCase()}`}
-                      className="transition-colors duration-200 hover:text-black"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
         </div>
 
-        {/* Huge Brand Watermark */}
-        <div className="relative mt-20 overflow-hidden select-none pointer-events-none">
-          {/* <h1
-            className="
-              text-center
-              text-[20vw]
-              font-black
-              leading-none
-              tracking-tight
-              text-neutral-200
-            "
-          >
-            PULSE
-          </h1> */}
-        </div>
+        {/* ── Divider ── */}
+        <div className="mt-8 mb-5 h-px w-full bg-neutral-100" />
 
-        {/* Divider */}
-        <div className="mt-8 h-px w-full bg-neutral-300" />
+        {/* ── Bottom Bar ── */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-neutral-400">
+          <p>© {new Date().getFullYear()} Pulse AI. All rights reserved.</p>
 
-        {/* Bottom */}
-        <div
-          className="
-            mt-6
-            flex
-            flex-col
-            items-center
-            gap-4
-            text-center
-            text-xs
-            text-neutral-500
-            md:flex-row
-            md:justify-between
-            md:text-left
-          "
-        >
-          <p>
-            © {new Date().getFullYear()} Pulse. All rights reserved.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-5 md:justify-start">
+          <div className="flex items-center gap-4">
             <a
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors duration-200 hover:text-black"
+              className="hover:text-neutral-700 transition-colors"
             >
               Twitter
             </a>
-
             <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors duration-200 hover:text-black"
+              className="hover:text-neutral-700 transition-colors"
             >
               GitHub
             </a>
-
             <a
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors duration-200 hover:text-black"
+              className="hover:text-neutral-700 transition-colors"
             >
               LinkedIn
             </a>
           </div>
         </div>
+
       </div>
     </footer>
   );

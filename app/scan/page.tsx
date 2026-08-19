@@ -1,22 +1,32 @@
 "use client";
 
 import Image from "next/image";
-import Camera from "../Icons/Camera";
-import Send from "../Icons/Send";
 import { useRef, useState, useEffect } from "react";
-import CrossIcon from "../Icons/Cross";
 import axios from "axios";
+import {
+  Camera,
+  ArrowUp,
+  X,
+  Plus,
+  TextSearch,
+  ScanLine,
+  ChevronsLeftRight,
+  Sparkles,
+  RefreshCw,
+  LogOut,
+  SlidersHorizontal,
+  Activity,
+  AlertTriangle,
+  ShieldAlert,
+} from "lucide-react";
 import { scanFeatures } from "../constants/default";
-import { ChevronsLeftRight, PlusIcon, TextSearch } from "lucide-react";
 import { PulseBlock, PulseResponse } from "../constants/responseType";
-
 import imageCompression from "browser-image-compression";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import ChatThinkingLoader from "../Icons/Loading";
 import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
-
 
 async function processImage(file: File): Promise<File> {
   let processedFile = file;
@@ -38,7 +48,7 @@ async function processImage(file: File): Promise<File> {
     processedFile = new File(
       [blob as Blob],
       file.name.replace(/\.(heic|heif)$/i, ".jpg"),
-      { type: "image/jpeg" },
+      { type: "image/jpeg" }
     );
   }
 
@@ -53,22 +63,19 @@ export default function Scan() {
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
       reader.readAsDataURL(file);
-
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-
-      reader.onerror = (error) => {
-        reject(error);
-      };
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
     });
   };
-  const file = useRef<HTMLInputElement>(null);
-  const [path, setpath] = useState<string | null>(null);
-  const [input, setInput] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const [path, setPath] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+
   interface UserMessage {
     role: "user";
     data: string;
@@ -88,99 +95,23 @@ export default function Scan() {
   type ChatMessage = UserMessage | AssistantMessage | LoadingState;
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [base64, setBase64] = useState("");
-  const [responseWait, SetResponseWait] = useState(false);
-  async function handleScanBody() {
-    if (!input.trim()) return;
-
-    const userMsg = input.trim();
-    setInput("");
-
-    const BackendPath = process.env.NEXT_PUBLIC_API_URL;
-    if (!BackendPath) return;
-
-    // Chat to send to backend (NO loading message)
-    const contextChat: ChatMessage[] = [
-      ...chat,
-      {
-        role: "user",
-        data: userMsg,
-        image: path ? path : null,
-      },
-    ];
-
-    // UI chat (WITH loading message)
-    setChat([
-      ...contextChat,
-      {
-        role: "server",
-        data: "loading",
-      },
-    ]);
-
-    SetResponseWait(true);
-
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({
-        behavior: "smooth",
-      });
-    }, 50);
-
-    try {
-      const response = await axios.post(BackendPath, {
-        prompt: userMsg,
-        image: base64,
-        contextofChat: contextChat, // no loading message
-      });
-      console.log("response data ---> ", response);
-      const parsedResponse: PulseResponse = JSON.parse(response.data.response);
-
-      // Remove loading and add assistant response
-      setChat((prev) => [
-        ...prev.filter((msg) => msg.role !== "server"),
-        {
-          role: "assistant",
-          data: parsedResponse.blocks,
-        },
-      ]);
-    } catch (error) {
-      console.error(error);
-
-      // Remove loading and show error
-      // setChat((prev) => [
-      //   ...prev.filter((msg) => msg.role !== "server"),
-      //   {
-      //     role: "assistant",
-      //     data: [
-      //       {
-      //         type: "text",
-      //         text: "Something went wrong. Please try again.",
-      //       },
-      //     ],
-      //   },
-      // ]);
-    } finally {
-      SetResponseWait(false);
-
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({
-          behavior: "smooth",
-        });
-      }, 50);
-    }
-  }
-
+  const [responseWait, setResponseWait] = useState(false);
   const [menu, setMenuPanel] = useState(false);
-
-  console.log(chat);
-
   const [imageUpload, setImgUpload] = useState(false);
-
   const [imagePreview, setPreview] = useState(false);
-  const [previewPath, setPreviewPath] = useState<string | null>();
+  const [previewPath, setPreviewPath] = useState<string | null>(null);
 
   const supabase = SupabaseBrowserClient();
-
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  // Auto-resize textarea height on text change
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+    }
+  }, [input]);
 
   useEffect(() => {
     async function loadUser() {
@@ -200,235 +131,361 @@ export default function Scan() {
     loadUser();
   }, []);
 
-  const router = useRouter();
-
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
-
     if (!error) {
       router.push("/login");
     }
   };
 
+  async function handleScanBody(customText?: string) {
+    const userMsg = (customText || input).trim();
+    if (!userMsg && !base64) return;
+
+    const activeImage = path;
+    const activeBase64 = base64;
+
+    setInput("");
+    setPath(null);
+    setBase64("");
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+
+    const BackendPath = process.env.NEXT_PUBLIC_API_URL;
+    if (!BackendPath) return;
+
+    const contextChat: ChatMessage[] = [
+      ...chat,
+      {
+        role: "user",
+        data: userMsg || "Scan this label for nutrition facts and health flags.",
+        image: activeImage,
+      },
+    ];
+
+    setChat([...contextChat, { role: "server", data: "loading" }]);
+    setResponseWait(true);
+
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+
+    try {
+      const response = await axios.post(BackendPath, {
+        prompt: userMsg || "Scan this label for nutrition facts and health flags.",
+        image: activeBase64,
+        contextofChat: contextChat,
+      });
+
+      const parsedResponse: PulseResponse = JSON.parse(response.data.response);
+
+      setChat((prev) => [
+        ...prev.filter((msg) => msg.role !== "server"),
+        {
+          role: "assistant",
+          data: parsedResponse.blocks,
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setResponseWait(false);
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileInput = e.target.files?.[0];
+    if (!fileInput) return;
+
+    const formats = ["jpeg", "jpg", "heif", "heic", "png", "webp"];
+    const ext = fileInput.name.split(".").pop()?.toLowerCase();
+    if (ext && !formats.includes(ext)) {
+      alert("Invalid image type");
+      return;
+    }
+
+    try {
+      setImgUpload(true);
+      const compressedImage = await processImage(fileInput);
+      const b64 = await fileToBase64(compressedImage);
+      setBase64(b64);
+      setPath(URL.createObjectURL(compressedImage));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setImgUpload(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
-    <div className="flex h-dvh min-h-0 overflow-hidden bg-linear-to-t from-gray-100 via-neutral-50 to-gray-100 relative">
-      {imagePreview && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          onClick={() => setPreview(false)}
-          className="w-full h-full backdrop-blur-sm flex justify-center items-center absolute z-100 bg-black/10"
-        >
-          {previewPath ? (
-            <Image
-              src={previewPath}
-              width={250}
-              height={250}
-              className="duration-300 ease-in-out w-80 h-80"
-              alt="product-label-image"
-            ></Image>
-          ) : null}
-        </motion.div>
-      )}
-      <div
-        className={`fixed inset-y-0 left-0 z-250 rounded-r-3xl
-           shrink-0 px-3 py-4 duration-300 ease-in-out sm:py-5 ${
-             menu
-               ? "w-[min(20rem,82vw)]  bg-gray-200 shadow-xl backdrop-blur-2xl lg:w-64 lg:shadow-none "
-               : "w-0 bg-transparent sm:w-20"
-           }`}
-      >
-        <div className={`w-full ${menu ? "text-end" : "text-center"}`}>
-          <button
-            className="cursor-pointer bg-gray-300 rounded-xl p-1 hover:bg-gray-500 group duration-300 ease-in-out text-neutral-300"
-            onClick={() => {
-              setMenuPanel((e) => !e);
-            }}
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-neutral-50 text-neutral-900 font-sans antialiased relative">
+      {/* ── Image Lightbox Modal ── */}
+      <AnimatePresence>
+        {imagePreview && previewPath && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPreview(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
           >
-            <ChevronsLeftRight
-              size={22}
-              strokeWidth={1}
-              className="cursor-pointer text-gray-700 transition-colors duration-200 group-hover:text-gray-200"
-            />
+            <motion.div
+              initial={{ scale: 0.98 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.98 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-lg max-h-[85vh] rounded-lg overflow-hidden bg-white p-1.5 border border-neutral-200 shadow-xl"
+            >
+              <Image
+                src={previewPath}
+                width={800}
+                height={800}
+                className="w-full h-auto max-h-[75vh] object-contain rounded-md"
+                alt="Product label full view"
+              />
+              <button
+                type="button"
+                onClick={() => setPreview(false)}
+                className="absolute top-3 right-3 rounded-md bg-neutral-900/80 p-1 text-white hover:bg-neutral-900 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Sidebar ── */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 flex flex-col justify-between border-r border-neutral-200 bg-white transition-all duration-200 md:static ${
+          menu ? "w-56 translate-x-0" : "-translate-x-full md:w-14 md:translate-x-0"
+        }`}
+      >
+        <div className="flex flex-col p-2 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-1 py-1 mb-2">
+            {menu && (
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-xs tracking-tight text-neutral-900">
+                  Pulse
+                </span>
+                <span className="h-1 w-1 rounded-full bg-neutral-400" />
+                <span className="text-[9px] font-mono text-neutral-400">AI</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setMenuPanel(!menu)}
+              className="p-1 rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+              title={menu ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              <ChevronsLeftRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* New Scan Button */}
+          <button
+            type="button"
+            onClick={() => setChat([])}
+            className={`flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 text-neutral-50 text-[11px] font-medium hover:bg-neutral-800 active:scale-95 transition-all shadow-2xs mb-2 ${
+              menu ? "w-full px-2.5 py-1.5" : "w-10 h-8 mx-auto"
+            }`}
+            title="New Chat"
+          >
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            {menu && <span>New Scan</span>}
           </button>
+
+          {/* Quick Search */}
+          {menu && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-50 border border-neutral-200 text-[11px] text-neutral-400 mb-3">
+              <TextSearch className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Search history...</span>
+            </div>
+          )}
+
+          {/* History */}
+          {menu && (
+            <div className="flex flex-col gap-0.5">
+              <span className="px-1 text-[9px] font-mono text-neutral-400 uppercase tracking-wider">
+                History
+              </span>
+              <div className="flex flex-col gap-0.5 mt-1">
+                {["Greek Yogurt Whole Milk", "Organic Protein Bar", "Almond Milk Unsweetened"].map((item) => (
+                  <button
+                    type="button"
+                    key={item}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 text-left truncate transition-colors"
+                  >
+                    <ScanLine className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <span className="truncate">{item}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {menu && (
-          <div className="flex w-full items-end justify-between">
-            {/* <div className="flex flex-row items-end gap-1">
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-black font-normal text-white">
-                <PulseIcon />
-              </div>
-              <Logo textSize="text-md font-semibold"></Logo>
-            </div> */}
-            <span className="text-md text-neutral-700">Chat</span>
-          </div>
-        )}
-
-        {menu && (
-          <div className="mt-6 flex h-full w-full flex-1 flex-col items-start gap-2 text-xs pb-20">
-            {/* Top Actions */}
-            <button
-              onClick={() => setChat([])}
-              className="flex w-[60%] cursor-pointer items-center justify-center gap-1 rounded-full bg-black p-2 text-neutral-50 duration-100 ease-in-out hover:scale-101 hover:bg-neutral-900 active:scale-95"
-            >
-              <PlusIcon size={20} strokeWidth={1} />
-              <span className="text-md">New Chat</span>
-            </button>
-
-            <button
-              onClick={() => setChat([])}
-              className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-xl bg-neutral-100 px-4 py-2 text-neutral-700 duration-100 ease-in-out hover:scale-101 hover:bg-neutral-200 hover:text-black active:scale-95"
-            >
-              <TextSearch size={20} strokeWidth={1} />
-              <span className="text-md">Search Chat</span>
-            </button>
-
-            {/* Push everything below to the bottom */}
-            <div className="mt-auto w-full border-t border-neutral-200 pt-4">
-              <div className="mb-3 flex items-center gap-3">
-                <Image
-                  src={user?.user_metadata?.avatar_url || "/default-avatar.png"}
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-
+        {/* User Footer */}
+        <div className="p-2 border-t border-neutral-100">
+          <div className="flex items-center justify-between p-1 rounded-md bg-neutral-50 border border-neutral-200/80">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Image
+                src={user?.user_metadata?.avatar_url || "/default-avatar.png"}
+                alt="Avatar"
+                width={22}
+                height={22}
+                className="rounded-md border border-neutral-200 bg-neutral-200 shrink-0"
+              />
+              {menu && (
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-neutral-900">
-                    {user?.user_metadata?.full_name || "User"}
+                  <p className="text-[11px] font-medium text-neutral-800 truncate leading-tight">
+                    {user?.user_metadata?.full_name || "Consumer"}
                   </p>
-
-                  <p className="truncate text-xs text-neutral-500">
-                    {user?.email}
+                  <p className="text-[9px] text-neutral-400 truncate leading-tight font-mono">
+                    {user?.email || "Free Tier"}
                   </p>
                 </div>
-              </div>
-
-              <button
-                onClick={handleSignOut}
-                className="flex w-[80%] items-center justify-center rounded-xl border border-red-200 px-4 py-2 text-xs text-red-600 transition hover:bg-red-50"
-              >
-                Sign Out
-              </button>
+              )}
             </div>
+            {menu && (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="p-1 text-neutral-400 hover:text-rose-600 transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </aside>
 
+      {/* Backdrop */}
       {menu && (
         <button
+          type="button"
           aria-label="Close menu"
-          className="fixed inset-0 z-40 bg-black/10 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/10 md:hidden"
           onClick={() => setMenuPanel(false)}
         />
       )}
 
-      <main
-        className={`flex   min-h-0 flex-1 flex-col transition-[padding] duration-300 ease-in-out ${
-          menu ? "lg:pl-64" : "pl-0 sm:pl-20 "
-        }`}
-      >
-        <div className="mx-auto flex min-h-0 w-full  flex-1 flex-col px-3 pt-4 sm:px-5 sm:pt-6 lg:px-10 max-w-6xl ">
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-2 px-8 custom-scrollbar">
+      {/* ── Main Stage ── */}
+      <main className="flex min-h-0 flex-1 flex-col bg-white">
+        {/* Top Header */}
+        <header className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-100 px-4 md:px-8 z-10">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-neutral-800">Nutrition Diagnostic Agent</span>
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono text-neutral-500 bg-neutral-100 border border-neutral-200">
+              <span className="w-1 h-1 rounded-full bg-emerald-500" />
+              Live
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setChat([])}
+            className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-neutral-800 transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span>Clear</span>
+          </button>
+        </header>
+
+        {/* Scrollable Chat Area */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 md:px-6 py-6">
+          <div className="w-full max-w-4xl mx-auto flex flex-col gap-4">
+            
+            {/* Empty State Screen */}
             {chat.length === 0 && (
-              <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 font-sans tracking-wide sm:py-12 lg:py-20">
-                <h1 className="text-center text-3xl font-bold text-zinc-800 sm:text-4xl lg:text-5xl">
-                  {`Welcome to `}
-                  <span className="bg-linear-to-r from-lime-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(132,204,22,0.4)]">
-                    Pulse AI
-                  </span>
+              <div className="flex flex-1 flex-col items-center justify-center my-auto pt-8 pb-4 text-center">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200 mb-2">
+                  <Sparkles className="w-2.5 h-2.5 text-neutral-600" />
+                  <span className="text-[10px] font-medium text-neutral-700">Pulse Label Intelligence</span>
+                </div>
+
+                <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-neutral-900">
+                  Welcome to Pulse AI
                 </h1>
-                <p className="max-w-lg whitespace-pre-line p-2 text-center text-xs font-light text-zinc-500 sm:text-sm">
-                  {`Upload a food label or ask a nutrition question.\nI'll analyze ingredients, nutrition facts, additives, and health impact instantly.`}
+                <p className="mt-1 text-xs text-neutral-500 max-w-md leading-relaxed">
+                  Upload an ingredient label image or enter any nutritional query for instant structured diagnostics.
                 </p>
-                <div className="mt-4 flex w-full flex-wrap items-center justify-center gap-2 sm:w-[90%] sm:gap-3 lg:mt-8 lg:w-[85%] lg:gap-6">
+
+                {/* Default Scan Feature Badges */}
+                <div className="mt-6 flex w-full flex-wrap items-center justify-center gap-2 max-w-3xl">
                   {scanFeatures.map((e) => (
-                    <div
+                    <button
+                      type="button"
                       key={e.title}
-                      className="flex max-w-full items-center justify-center gap-2 rounded-full border border-neutral-200  px-3 py-1"
+                      onClick={() => handleScanBody(e.title)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-200 bg-neutral-50/50 hover:bg-neutral-100 hover:text-neutral-900 transition-colors text-left"
                     >
-                      <e.icon strokeWidth={1.2} className="shrink-0" />
-                      <div className="flex min-w-0 flex-col items-start justify-center">
-                        <div className="max-w-full truncate text-xs font-semibold text-neutral-600">
-                          {e.title}
-                        </div>
-                        <div className="max-w-full truncate text-xs font-light text-neutral-600">
-                          {e.description}
-                        </div>
+                      <e.icon className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-medium text-neutral-800 leading-none">{e.title}</span>
+                        <span className="text-[9px] text-neutral-400 mt-0.5">{e.description}</span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Chat Messages */}
             {chat.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <motion.div
-                  initial={{
-                    opacity: 0,
-                    translateY: 35,
-
-                    scale: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    translateY: 0,
-
-                    scale: 1,
-                  }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}
-                  className={`max-w-[80%] rounded-3xl px-4 py-3 ${
-                    msg.role === "assistant" ? "bg-white" : ""
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`w-full ${
+                    msg.role === "user"
+                      ? "max-w-2xl flex flex-col items-end"
+                      : "max-w-4xl rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs"
                   }`}
                 >
                   {msg.role === "user" ? (
-                    <motion.div className="flex flex-col items-center gag-2">
+                    <div className="flex flex-col items-end gap-1.5">
                       {msg.image && (
-                        <Image
-                          src={msg.image}
-                          width={105}
-                          height={80}
-                          alt="label-iamge"
-                          className="rounded-lg cursor-pointer w-30 h-30"
-                          onClick={() => {
-                            setPreview(true);
-                            setPreviewPath(msg.image);
-                          }}
-                        ></Image>
+                        <div className="relative overflow-hidden rounded-md border border-neutral-200 bg-white p-0.5 shadow-2xs">
+                          <Image
+                            src={msg.image}
+                            width={80}
+                            height={80}
+                            alt="Label preview"
+                            className="rounded object-cover w-20 h-20 cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => {
+                              setPreview(true);
+                              setPreviewPath(msg.image || null);
+                            }}
+                          />
+                        </div>
                       )}
-                      <motion.p
-                        initial={{ opacity: 0, translateY: -10 }}
-                        animate={{ opacity: 1, translateY: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="text-[13px] bg-gray-200 rounded-3xl px-4 py-3 mt-2"
-                      >
+                      <div className="rounded-xl rounded-tr-xs bg-neutral-900 px-3.5 py-2 text-xs text-neutral-50 shadow-2xs leading-relaxed max-w-xl font-normal whitespace-pre-wrap break-words">
                         {msg.data}
-                      </motion.p>
-                    </motion.div>
+                      </div>
+                    </div>
                   ) : msg.role === "server" ? (
-                    <div>
-                      <ChatThinkingLoader className="text-black" size={20} />
+                    <div className="flex items-center gap-2 py-0.5 text-neutral-500">
+                      <ChatThinkingLoader className="text-neutral-900" size={14} />
+                      <span className="text-[11px] font-medium text-neutral-600">Analyzing ingredient matrix...</span>
                     </div>
                   ) : msg.role === "assistant" ? (
-                    <motion.div
-                      initial={{ opacity: 0, translateX: -10 }}
-                      animate={{ opacity: 1, translateX: 0 }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                      className="space-y-4"
-                    >
-                      {msg.data?.map((block, idx) => (
-                        <BlockRenderer key={idx} block={block} />
+                    <div className="w-full space-y-3">
+                      {msg.data?.map((block, bIdx) => (
+                        <BlockRenderer key={bIdx} block={block} />
                       ))}
-                    </motion.div>
+                    </div>
                   ) : null}
                 </motion.div>
               </div>
@@ -436,38 +493,48 @@ export default function Scan() {
 
             <div ref={messagesEndRef} />
           </div>
+        </div>
 
-          <div className="flex shrink-0 justify-center   pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
-            <div className="flex w-full max-w-2xl flex-col rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm shadow-zinc-100 transition-all duration-300 ease-in-out sm:rounded-4xl sm:p-3 lg:p-4">
-              {imageUpload && (
-                <div className="w-28 h-28 bg-gray-500 animate-pulse  rounded-xl"></div>
-              )}
+        {/* ── Auto-Sizing Command Bar ── */}
+        <div className="w-full shrink-0 p-3 md:px-6 md:pb-4 bg-gradient-to-t from-white via-white to-transparent">
+          <div className="w-full max-w-2xl mx-auto">
+            {/* Upload Spinner Alert */}
+            {imageUpload && (
+              <div className="flex items-center gap-1.5 p-1.5 mb-1.5 text-[10px] text-neutral-500 bg-neutral-50 rounded-md border border-neutral-200">
+                <div className="w-2.5 h-2.5 rounded-full border border-neutral-400 border-t-transparent animate-spin" />
+                <span>Processing label image...</span>
+              </div>
+            )}
 
-              {path && (
-                <div className={`h-auto w-full p-2 `}>
-                  <div className="relative flex h-24 w-24 items-center justify-center overflow-visible rounded-xl border border-white sm:h-32 sm:w-32">
-                    <button
-                      className="absolute -right-2 -top-2 z-50 cursor-pointer rounded-full bg-gray-200 p-1 shadow-md duration-300 ease-in-out hover:bg-gray-500"
-                      onClick={() => {
-                        setpath("");
-                        setBase64("");
-                      }}
-                    >
-                      <CrossIcon />
-                    </button>
-                    <Image
-                      src={path}
-                      alt="label-image"
-                      className="h-full w-full rounded-xl object-fill "
-                      width={200}
-                      height={200}
-                    />
-                  </div>
+            {/* Selected Image Thumbnail Preview */}
+            {path && (
+              <div className="mb-1.5">
+                <div className="relative inline-flex h-11 w-11 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPath(null);
+                      setBase64("");
+                    }}
+                    className="absolute -top-1 -right-1 z-10 rounded-full bg-neutral-900 p-0.5 text-white shadow-xs hover:bg-neutral-800"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                  <Image
+                    src={path}
+                    alt="Active thumbnail"
+                    className="h-full w-full rounded object-cover"
+                    width={44}
+                    height={44}
+                  />
                 </div>
-              )}
+              </div>
+            )}
 
+            {/* Input Card with Dynamic Auto-Growing Textarea */}
+            <div className="relative flex flex-col rounded-lg border border-neutral-200 bg-white p-2.5 shadow-2xs focus-within:border-neutral-300 transition-all">
               <textarea
-                // id="prompt"
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -476,66 +543,46 @@ export default function Scan() {
                     handleScanBody();
                   }
                 }}
-                placeholder="Ask AI about these ingredients..."
+                placeholder="Ask about ingredients, additives, allergens..."
                 rows={1}
-                className="field-sizing-content max-h-32 w-full resize-none overflow-auto bg-transparent p-3 text-sm text-black outline-none sm:max-h-40 sm:text-xs"
+                className="w-full resize-none overflow-y-auto bg-transparent px-0.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none min-h-[22px] max-h-44 leading-relaxed"
               />
 
-              <div className="flex h-auto w-full items-center justify-between gap-2 px-2 py-1 lg:px-3 lg:py-3">
-                <div className="relative flex items-center gap-2">
+              {/* Action Toolbar */}
+              <div className="flex items-center justify-between pt-2 border-t border-neutral-100 mt-1.5">
+                <div className="flex items-center gap-1">
                   <label
                     htmlFor="file"
-                    className="group flex cursor-pointer items-center gap-1 rounded-2xl border border-neutral-100 bg-neutral-200 p-2 text-xs font-semibold text-neutrsal-900 duration-300 ease-in-out hover:border-gray-400"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-50 border border-neutral-200 text-neutral-700 text-[10px] font-medium hover:bg-neutral-100 transition-colors cursor-pointer"
                   >
-                    <Camera />
-                    <div className="absolute -left-5 -top-9 w-20 translate-y-6 rounded-lg border border-gray-200 bg-neutral-100 p-1 text-center text-neutral-900 opacity-0 shadow-xs shadow-gray-100 duration-300 ease-in-out group-hover:translate-y-2 group-hover:opacity-100">
-                      Scan Label
-                    </div>
-                    <span className="font-normal text-xs text-black group-hover:text-gray-500 ">
-                      Attach
-                    </span>
+                    <Camera className="w-3 h-3 text-neutral-500" />
+                    <span>Attach Label</span>
                   </label>
                   <input
-                    ref={file}
+                    ref={fileInputRef}
                     type="file"
                     id="file"
                     className="hidden"
-                    onChange={async () => {
-                      const fileInput = file?.current?.files?.[0];
-                      const formats = ["jpeg", "jpg", "heif", "heic", "png"];
-
-                      const x = fileInput?.name.split(".")[-1];
-                      if (x && !formats.includes(x)) {
-                        alert("Invalid image type");
-                        return;
-                      }
-
-                      if (fileInput) {
-                        try {
-                          setImgUpload(true);
-
-                          const compressedImage = await processImage(fileInput);
-                          const base64 = await fileToBase64(compressedImage);
-                          setBase64(base64);
-                          setpath(URL.createObjectURL(compressedImage));
-                        } catch (err) {
-                          alert(err);
-                        } finally {
-                          setImgUpload(false);
-                        }
-                      }
-                    }}
+                    accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,image/webp"
+                    onChange={handleFileChange}
                   />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Preset options"
+                    className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                  >
+                    <SlidersHorizontal className="w-3 h-3" />
+                  </button>
                 </div>
 
                 <button
-                  className="group shrink-0 cursor-pointer text-white flex items-center text-xs rounded-full bg-neutral-900 py-2 px-4 gap-1 duration-300 ease-in-out hover:scale-101 active:scale-90"
-                  onClick={() => {
-                    if (!responseWait) handleScanBody();
-                  }}
+                  type="button"
+                  disabled={responseWait || (!input.trim() && !base64)}
+                  onClick={() => handleScanBody()}
+                  className="flex h-6 w-6 items-center justify-center rounded-md bg-neutral-900 text-neutral-50 disabled:opacity-20 hover:bg-neutral-800 active:scale-95 transition-all shadow-2xs"
                 >
-                  <Send />
-                  <span className="font-normal">send</span>
+                  <ArrowUp className="w-3 h-3 stroke-[2.5]" />
                 </button>
               </div>
             </div>
@@ -546,52 +593,67 @@ export default function Scan() {
   );
 }
 
+/* ── Content Block Renderers ── */
 function BlockRenderer({ block }: { block: PulseBlock }) {
   switch (block.type) {
     case "text":
-      return <p className="text-[13px] leading-7">{block.content}</p>;
-
-    case "bullet_list":
       return (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-[14px]">{block.title}</h3>
-
-          <ul className="list-disc pl-5 space-y-1 text-[13px]">
-            {block.items.map((item, idx) => (
-              <li key={idx}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      );
-
-    case "warning":
-      return (
-        <div className="rounded-xl border border-yellow-100 bg-yellow-50 p-3 text-[13px]">
-          <p className="font-medium">{block.severity.toUpperCase()} Warning</p>
-          <p>{block.content}</p>
+        <div className="w-full text-xs leading-relaxed text-neutral-700 font-normal whitespace-pre-wrap break-words">
+          {block.content}
         </div>
       );
 
     case "score":
       return (
-        <div className="rounded-xl bg-green-50 p-3 text-[13px]">
-          <h3 className="font-semibold text-[14px]">
-            {block.label}: {block.value}/100
-          </h3>
-          <p>{block.explanation}</p>
+        <div className="w-full rounded-lg border border-neutral-200 bg-neutral-50/60 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 rounded-md bg-white border border-neutral-200 text-neutral-800 shadow-2xs">
+                <Activity className="w-3.5 h-3.5 text-neutral-700" />
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-neutral-900">{block.label}</span>
+                <p className="text-[9px] text-neutral-400 font-mono">Nutritional Density Score</p>
+              </div>
+            </div>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-lg font-bold tracking-tight text-neutral-900 font-mono">{block.value}</span>
+              <span className="text-[10px] text-neutral-400 font-mono">/100</span>
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] text-neutral-600 leading-relaxed border-t border-neutral-200/60 pt-2 font-normal">
+            {block.explanation}
+          </p>
+        </div>
+      );
+
+    case "warning":
+      return (
+        <div className="w-full flex items-start gap-2 rounded-lg border border-amber-200/80 bg-amber-50/50 p-2.5">
+          <div className="p-0.5 text-amber-700 mt-0.5">
+            <AlertTriangle className="w-3.5 h-3.5" />
+          </div>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-amber-800 font-mono">
+              {block.severity} Risk Warning
+            </p>
+            <p className="text-xs text-neutral-700 leading-relaxed font-normal">{block.content}</p>
+          </div>
         </div>
       );
 
     case "allergens":
       return (
-        <div>
-          <h3 className="font-semibold text-[14px]">Allergens</h3>
-
-          <div className="flex gap-2 flex-wrap mt-2">
+        <div className="w-full rounded-lg border border-neutral-200 bg-neutral-50/40 p-2.5">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <ShieldAlert className="w-3 h-3 text-neutral-600" />
+            <span className="text-xs font-medium text-neutral-900">Detected Allergens & Compounds</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
             {block.items.map((item) => (
               <span
                 key={item}
-                className="rounded-full bg-red-100 px-2 py-1 text-xs"
+                className="rounded-md bg-white border border-neutral-200 px-2 py-0.5 text-[10px] font-medium text-neutral-700 shadow-2xs"
               >
                 {item}
               </span>
@@ -600,44 +662,52 @@ function BlockRenderer({ block }: { block: PulseBlock }) {
         </div>
       );
 
+    case "bullet_list":
+      return (
+        <div className="w-full space-y-1.5 rounded-lg border border-neutral-200 bg-neutral-50/30 p-2.5">
+          <span className="text-xs font-medium text-neutral-900">{block.title}</span>
+          <ul className="space-y-0.5 pl-3.5 text-xs text-neutral-600 list-disc">
+            {block.items.map((item, idx) => (
+              <li key={idx} className="leading-relaxed font-normal">{item}</li>
+            ))}
+          </ul>
+        </div>
+      );
+
     case "table":
       return (
-        <table className="w-full border-collapse border border-neutral-300 text-[13px]">
-          <thead>
-            <tr>
-              {block.headers.map((header) => (
-                <th
-                  key={header}
-                  className="border border-neutral-300 p-2 text-left"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {block.rows.map((row, idx) => (
-              <tr key={idx}>
-                {row.map((cell, i) => (
-                  <td key={i} className="border border-neutral-300 p-2">
-                    {cell}
-                  </td>
+        <div className="w-full overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-neutral-50 text-neutral-700 border-b border-neutral-200">
+              <tr>
+                {block.headers.map((h) => (
+                  <th key={h} className="p-2 font-medium text-[10px] font-mono">{h}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {block.rows.map((row, rIdx) => (
+                <tr key={rIdx} className="hover:bg-neutral-50/40 transition-colors">
+                  {row.map((cell, cIdx) => (
+                    <td key={cIdx} className="p-2 text-[11px] text-neutral-600 font-normal">{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
 
     case "ingredient":
       return (
-        <div className="rounded-xl border p-3 border-neutral-300 text-[13px]">
-          <h3 className="font-semibold text-[14px]">{block.name}</h3>
-
-          <p className="text-xs text-gray-500">{block.category}</p>
-
-          <p className="mt-2">{block.explanation}</p>
+        <div className="w-full rounded-lg border border-neutral-200 bg-white p-2.5 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-neutral-900">{block.name}</span>
+            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 text-neutral-600 border border-neutral-200">
+              {block.category}
+            </span>
+          </div>
+          <p className="text-[11px] text-neutral-500 leading-relaxed font-normal">{block.explanation}</p>
         </div>
       );
 

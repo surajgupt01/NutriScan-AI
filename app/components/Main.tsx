@@ -1,164 +1,123 @@
 "use client";
 
-import Link from "next/link";
-import Logo from "../components/Logo";
-import { Activity } from "lucide-react";
+import {
+  SlidersHorizontal,
+  Image as ImageIcon,
+  Mic,
+  ArrowUp,
+  LayoutTemplate,
+  Box,
+  Sparkles,
+} from "lucide-react";
 import { motion } from "motion/react";
 
-  const child = {
-    hidden: {
-      x: 8,
-      opacity: 0,
-    },
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeInOut" as const, 
-
-      },
-    },
-  };
-  const parent = {
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 1.2,
-        delayChildren: 0.8,
-
-      },
-    },
-    hidden: { opacity: 0 },
-  };
 export default function Main() {
   return (
-    <section className="w-full h-auto lg:min-h-screen overflow-hidden">
-      <div className="max-w-8xl mx-auto flex flex-col items-center lg:px-2 px-4 py-4">
-
-        {/* ── Text block: fade up on mount ── */}
+    <section className="w-full min-h-[60vh] overflow-hidden bg-transparent text-neutral-900 py-16 flex flex-col justify-center items-center">
+      <div className="max-w-3xl mx-auto flex flex-col items-center px-4 w-full">
+        
+        {/* ── Top text block ── */}
         <motion.div
-          className="text-center max-w-4xl mx-auto mb-12 md:mb-16 flex justify-center flex-col items-center"
-          initial={{ opacity: 0, y: 24 }}
+          className="text-center max-w-lg mx-auto mb-10 flex justify-center flex-col items-center"
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" as const }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <motion.h2
-            className="mt-6 text-2xl md:text-4xl font-bold tracking-wider"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" as const }}
-          >
-            {` Understand What's Really`}
-            <span className="bg-linear-to-r from-lime-500 to-emerald-500 bg-clip-text text-transparent">
-              {" "}Inside Your Food
+          {/* Badge */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-neutral-100 border border-neutral-200/80 mb-3.5">
+            <Sparkles className="w-3 h-3 text-neutral-600" />
+            <span className="text-[10px] font-medium text-neutral-700 tracking-tight">
+              Pulse AI v2.4 • Nutrition Intelligence
             </span>
-          </motion.h2>
+          </div>
 
-          <motion.p
-            className="mt-4 text-md text-neutral-600 max-w-xl mx-auto tracking-wide"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-          >
-            Scan ingredient labels, uncover hidden additives, and get instant
-            AI-powered health insights before you buy.
-          </motion.p>
+          {/* Heading */}
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-neutral-900 leading-snug">
+            {`Understand what's really`}{" "}
+            <span className="text-neutral-500 font-medium">inside your food</span>
+          </h1>
+
+          {/* Subheading */}
+          <p className="mt-2 text-xs md:text-sm text-neutral-500 max-w-sm mx-auto font-normal leading-normal">
+            Scan labels, decode hidden additives, and instantly evaluate nutrition safety with advanced precision.
+          </p>
         </motion.div>
 
-        <div className="flex lg:flex-row flex-col-reverse items-center justify-between gap-4 lg:w-[75%] w-full scale-90">
+        {/* ── Prompt Bar ── */}
+        <motion.div 
+          className="w-full max-w-lg"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.15 }}
+        >
+          <div className="w-full bg-white rounded-lg border border-neutral-200 p-2.5 shadow-sm flex flex-col gap-2.5">
+            <textarea
+              readOnly
+              rows={2}
+              className="w-full bg-transparent text-neutral-800 text-xs placeholder-neutral-400 focus:outline-none resize-none font-normal leading-relaxed selection:bg-neutral-100"
+              value="Analyze this product label for hidden sugars, allergens, and artificial additives..."
+            />
 
-          {/* ── Left text: slide in from left ── */}
-          <motion.div
-            className="flex-1"
-            initial={{ opacity: 0, x: -32 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" as const }}
-          >
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-700 mb-3">
-              AI Powered Food Intelligence
-            </p>
-
-            <h1 className="lg:text-5xl text-3xl font-bold leading-tight text-neutral-950">
-              {` Know What's`}
-              <span className="block text-green-800">Really Inside</span>
-              Your Food
-            </h1>
-
-            <p className="mt-5 text-sm text-neutral-600 leading-relaxed">
-              Scan food labels and instantly understand ingredients,
-              additives, nutrition facts, sugar levels, and potential health
-              concerns with AI-powered analysis.
-            </p>
-
-            {/* ── Stats: stagger each one ── */}
-            <div className="flex gap-6 mt-8">
-              {[
-                { label: "Ingredient Analysis", value: "Instant" },
-                { label: "Health Insights", value: "AI" },
-                { label: "Nutrition Reports", value: "Smart" },
-              ].map((stat, i) => (
-                <motion.div
-                  key={stat.value}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.45 + i * 0.12,
-                    ease: "easeOut" as const,
-                  }}
+            <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
+              {/* Left Action Buttons */}
+              <div className="flex items-center gap-1">
+                <button 
+                  type="button"
+                  aria-label="Filter parameters" 
+                  className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
                 >
-                  <h3 className="text-2xl font-bold">{stat.value}</h3>
-                  <p className="text-sm text-neutral-700">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                </button>
 
-          {/* ── Chat card: slide in from right — your existing variants untouched ── */}
-          <motion.div
-            initial={{ opacity: 0, x: 32 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" as const }}
-            className="lg:w-[50%] w-full"
-          >
-            {/* your existing motion.div with parent variants stays exactly as-is */}
-            <motion.div
-              initial={"hidden"}
-              animate={"visible"}
-              variants={parent}
-              className="h-150 p-4 bg-linear-to-tl from-neutral-950 via-green-300 to-lime-200 rounded-2xl flex justify-center items-center"
-            >
-              <div className="w-90 h-100 rounded-2xl px-4 py-8 backdrop-blur-lg bg-transparent shadow-xl flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="bg-black p-2 rounded-xl w-8 h-8 text-white flex items-center justify-center">
-                    <Activity />
-                  </div>
-                  <Logo textSize="xs" />
-                </div>
+                <div className="h-3 w-px bg-neutral-200 mx-0.5" />
 
-                <motion.div variants={child} className="flex justify-start">
-                  <div className="max-w-[75%] rounded-xl rounded-tl-none bg-white/60 text-black text-xs px-3 py-2">
-                    {` Hi! Upload a food label and I'll analyze ingredients, nutrition facts, and potential health concerns.`}
-                  </div>
-                </motion.div>
+                <button 
+                  type="button"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-50 border border-neutral-200/80 text-neutral-600 text-[10px] font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+                >
+                  <LayoutTemplate className="w-3 h-3 text-neutral-500" />
+                  <span>Templates</span>
+                </button>
 
-                <motion.div variants={child} className="flex justify-end">
-                  <div className="max-w-[75%] rounded-xl rounded-tr-none bg-black text-white text-xs px-3 py-2">
-                    Is this product healthy for daily consumption?
-                  </div>
-                </motion.div>
-
-                <motion.div variants={child} className="flex justify-start">
-                  <div className="max-w-[75%] rounded-xl rounded-tl-none bg-white/60 text-black text-xs px-3 py-2">
-                    {` I'll check the ingredients, additives, sugar content, and nutritional profile to help you decide.`}
-                  </div>
-                </motion.div>
+                <button 
+                  type="button"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-50 border border-neutral-200/80 text-neutral-600 text-[10px] font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+                >
+                  <Box className="w-3 h-3 text-neutral-500" />
+                  <span>Additives</span>
+                </button>
               </div>
-            </motion.div>
-          </motion.div>
 
-        </div>
+              {/* Right Media / Submit Buttons */}
+              <div className="flex items-center gap-0.5">
+                <button 
+                  type="button"
+                  aria-label="Upload label image" 
+                  className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                >
+                  <ImageIcon className="w-3.5 h-3.5" />
+                </button>
+
+                <button 
+                  type="button"
+                  aria-label="Voice input" 
+                  className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                </button>
+
+                <button 
+                  type="button"
+                  aria-label="Send query" 
+                  className="p-1.5 ml-1 rounded-md bg-neutral-900 text-neutral-50 hover:bg-neutral-800 active:scale-95 transition-all flex items-center justify-center"
+                >
+                  <ArrowUp className="w-3 h-3 stroke-[2.5]" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
       </div>
     </section>
   );
