@@ -18,6 +18,7 @@ import {
   Activity,
   AlertTriangle,
   ShieldAlert,
+  PanelLeft,
 } from "lucide-react";
 import { scanFeatures } from "../constants/default";
 import { PulseBlock, PulseResponse } from "../constants/responseType";
@@ -105,7 +106,7 @@ export default function Scan() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  // Auto-resize textarea height on text change
+  // Dynamic auto-resizing textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -261,29 +262,29 @@ export default function Scan() {
         )}
       </AnimatePresence>
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar (Slide-over on mobile / fixed width when open on desktop) ── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex flex-col justify-between border-r border-neutral-200 bg-white transition-all duration-200 md:static ${
-          menu ? "w-56 translate-x-0" : "-translate-x-full md:w-14 md:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col justify-between border-r border-neutral-200 bg-white transition-transform duration-200 ease-in-out md:static ${
+          menu
+            ? "w-64 translate-x-0"
+            : "-translate-x-full md:w-0 md:border-none md:overflow-hidden"
         }`}
       >
-        <div className="flex flex-col p-2 overflow-hidden">
+        <div className="flex flex-col p-3 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-1 py-1 mb-2">
-            {menu && (
-              <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-xs tracking-tight text-neutral-900">
-                  Pulse
-                </span>
-                <span className="h-1 w-1 rounded-full bg-neutral-400" />
-                <span className="text-[9px] font-mono text-neutral-400">AI</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-xs tracking-tight text-neutral-900">
+                Pulse
+              </span>
+              <span className="h-1 w-1 rounded-full bg-neutral-400" />
+              <span className="text-[9px] font-mono text-neutral-400">AI</span>
+            </div>
             <button
               type="button"
-              onClick={() => setMenuPanel(!menu)}
+              onClick={() => setMenuPanel(false)}
               className="p-1 rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
-              title={menu ? "Collapse Sidebar" : "Expand Sidebar"}
+              title="Collapse Sidebar"
             >
               <ChevronsLeftRight className="w-3.5 h-3.5" />
             </button>
@@ -292,49 +293,49 @@ export default function Scan() {
           {/* New Scan Button */}
           <button
             type="button"
-            onClick={() => setChat([])}
-            className={`flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 text-neutral-50 text-[11px] font-medium hover:bg-neutral-800 active:scale-95 transition-all shadow-2xs mb-2 ${
-              menu ? "w-full px-2.5 py-1.5" : "w-10 h-8 mx-auto"
-            }`}
+            onClick={() => {
+              setChat([]);
+              if (window.innerWidth < 768) setMenuPanel(false);
+            }}
+            className="flex items-center justify-center gap-1.5 w-full px-2.5 py-1.5 rounded-md bg-neutral-900 text-neutral-50 text-[11px] font-medium hover:bg-neutral-800 active:scale-95 transition-all shadow-2xs mb-2"
             title="New Chat"
           >
             <Plus className="w-3.5 h-3.5 shrink-0" />
-            {menu && <span>New Scan</span>}
+            <span>New Scan</span>
           </button>
 
           {/* Quick Search */}
-          {menu && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-50 border border-neutral-200 text-[11px] text-neutral-400 mb-3">
-              <TextSearch className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Search history...</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-50 border border-neutral-200 text-[11px] text-neutral-400 mb-3">
+            <TextSearch className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Search history...</span>
+          </div>
 
           {/* History */}
-          {menu && (
-            <div className="flex flex-col gap-0.5">
-              <span className="px-1 text-[9px] font-mono text-neutral-400 uppercase tracking-wider">
-                History
-              </span>
-              <div className="flex flex-col gap-0.5 mt-1">
-                {["Greek Yogurt Whole Milk", "Organic Protein Bar", "Almond Milk Unsweetened"].map((item) => (
-                  <button
-                    type="button"
-                    key={item}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 text-left truncate transition-colors"
-                  >
-                    <ScanLine className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                    <span className="truncate">{item}</span>
-                  </button>
-                ))}
-              </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="px-1 text-[9px] font-mono text-neutral-400 uppercase tracking-wider">
+              History
+            </span>
+            <div className="flex flex-col gap-0.5 mt-1">
+              {["Greek Yogurt Whole Milk", "Organic Protein Bar", "Almond Milk Unsweetened"].map((item) => (
+                <button
+                  type="button"
+                  key={item}
+                  onClick={() => {
+                    if (window.innerWidth < 768) setMenuPanel(false);
+                  }}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 text-left truncate transition-colors"
+                >
+                  <ScanLine className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <span className="truncate">{item}</span>
+                </button>
+              ))}
             </div>
-          )}
+          </div>
         </div>
 
         {/* User Footer */}
         <div className="p-2 border-t border-neutral-100">
-          <div className="flex items-center justify-between p-1 rounded-md bg-neutral-50 border border-neutral-200/80">
+          <div className="flex items-center justify-between p-1.5 rounded-md bg-neutral-50 border border-neutral-200/80">
             <div className="flex items-center gap-1.5 min-w-0">
               <Image
                 src={user?.user_metadata?.avatar_url || "/default-avatar.png"}
@@ -343,46 +344,52 @@ export default function Scan() {
                 height={22}
                 className="rounded-md border border-neutral-200 bg-neutral-200 shrink-0"
               />
-              {menu && (
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium text-neutral-800 truncate leading-tight">
-                    {user?.user_metadata?.full_name || "Consumer"}
-                  </p>
-                  <p className="text-[9px] text-neutral-400 truncate leading-tight font-mono">
-                    {user?.email || "Free Tier"}
-                  </p>
-                </div>
-              )}
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-neutral-800 truncate leading-tight">
+                  {user?.user_metadata?.full_name || "Consumer"}
+                </p>
+                <p className="text-[9px] text-neutral-400 truncate leading-tight font-mono">
+                  {user?.email || "Free Tier"}
+                </p>
+              </div>
             </div>
-            {menu && (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="p-1 text-neutral-400 hover:text-rose-600 transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="p-1 text-neutral-400 hover:text-rose-600 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </aside>
 
-      {/* Backdrop */}
+      {/* Backdrop for Mobile */}
       {menu && (
         <button
           type="button"
           aria-label="Close menu"
-          className="fixed inset-0 z-20 bg-black/10 md:hidden"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px] md:hidden"
           onClick={() => setMenuPanel(false)}
         />
       )}
 
       {/* ── Main Stage ── */}
       <main className="flex min-h-0 flex-1 flex-col bg-white">
-        {/* Top Header */}
-        <header className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-100 px-4 md:px-8 z-10">
+        {/* Top Header with Always-Visible Toggle Button when Closed */}
+        <header className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-100 px-3 md:px-8 z-10">
           <div className="flex items-center gap-2">
+            {!menu && (
+              <button
+                type="button"
+                onClick={() => setMenuPanel(true)}
+                className="p-1.5 rounded-md border border-neutral-200/80 text-neutral-700 bg-white hover:bg-neutral-50 transition-colors flex items-center justify-center shadow-2xs"
+                title="Open Sidebar"
+              >
+                <PanelLeft className="w-3.5 h-3.5" />
+              </button>
+            )}
             <span className="text-[11px] font-medium text-neutral-800">Nutrition Diagnostic Agent</span>
             <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono text-neutral-500 bg-neutral-100 border border-neutral-200">
               <span className="w-1 h-1 rounded-full bg-emerald-500" />
@@ -400,7 +407,7 @@ export default function Scan() {
         </header>
 
         {/* Scrollable Chat Area */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 md:px-6 py-6">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 md:px-6 py-6">
           <div className="w-full max-w-4xl mx-auto flex flex-col gap-4">
             
             {/* Empty State Screen */}
@@ -495,7 +502,7 @@ export default function Scan() {
           </div>
         </div>
 
-        {/* ── Auto-Sizing Command Bar ── */}
+        {/* ── Fixed Typing Box Container (max-w-2xl) ── */}
         <div className="w-full shrink-0 p-3 md:px-6 md:pb-4 bg-gradient-to-t from-white via-white to-transparent">
           <div className="w-full max-w-2xl mx-auto">
             {/* Upload Spinner Alert */}
