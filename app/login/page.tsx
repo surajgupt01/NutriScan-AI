@@ -4,71 +4,45 @@ import { GoogleIcon } from "../Icons/Google";
 import { motion } from "motion/react";
 import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { useEffect, useState } from "react";
+import { Sparkles, ArrowRight, Mail } from "lucide-react";
+
 export default function LoginPage() {
-  const [email, setEmail] = useState<string | null>(null);
-
+  const [email, setEmail] = useState<string>("");
   const [status, setStatus] = useState(false);
-
   const [countdown, setCountDown] = useState(0);
-
-  const parent = {
-    visible: {
-      opacity: 1,
-      translateY: 0,
-
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.5,
-      },
-    },
-    hidden: { opacity: 0, translateY: 10 },
-  };
-
-  const child = {
-    visible: {
-      opacity: 1,
-      translateY: 0,
-    },
-    hidden: { opacity: 0, translateY: 10 },
-  };
 
   const supabase = SupabaseBrowserClient();
 
   const handleGoogleAuth = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-
-    // console.log("data:", data);
-
-    // if (error) {
-    //   console.error("OAuth Error:", error);
-    // }
   };
-  const handleEmailAuth = async () => {
-    if (email) {
-      setStatus(false);
-      setCountDown(30);
 
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setStatus(false);
+    setCountDown(30);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (!error) {
       setStatus(true);
-
-      console.log(data);
-    } else {
     }
   };
 
   useEffect(() => {
     if (countdown === 0) {
-      setStatus(false);
       return;
     }
     const timer = setInterval(() => {
@@ -79,82 +53,120 @@ export default function LoginPage() {
   }, [countdown]);
 
   return (
-    <div className="w-full h-screen flex flex-col items-start p-6 justify-between bg-white">
-      <h2 className="lg:text-2xl text-xl font-bold tracking-tight text-neutral-700">
-        Pulse<span className="text-lime-400">.</span>
-      </h2>
-      <motion.div
-        variants={parent}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="w-full h-full flex flex-col justify-start items-center gap-4 py-12  "
-      >
-        <motion.div
-          variants={child}
-          className="lg:w-[25%] w-[88%] h-auto py-2 px-6 flex flex-col gap-8 "
-        >
-          <div className="flex flex-col gap-2">
-            <h2 className="font-semibold text-2xl">Welcome Back</h2>
-            <p className="text-xs font-light text-neutral-500">{`Every ingredient tells a story. We help you understand it.`}</p>
-          </div>
+    <div className="min-h-screen w-full flex flex-col justify-between bg-white text-neutral-900 px-6 py-6 antialiased">
+      
+      {/* ── Top Header Brand ── */}
+      <header className="flex items-center justify-between w-full max-w-4xl mx-auto">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-semibold tracking-tight text-neutral-900">
+            Pulse
+          </span>
+          <span className="h-1.5 w-1.5 rounded-full bg-neutral-400" />
+          <span className="text-[10px] font-mono text-neutral-400">
+            AI
+          </span>
+        </div>
+      </header>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-1 mt-8">
-              <label className="text-sm font-semibold">Email</label>
+      {/* ── Center Login Card ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="w-full max-w-sm mx-auto flex flex-col items-center my-auto"
+      >
+        {/* Badge */}
+        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200/80 mb-3 text-neutral-600">
+          <Sparkles className="w-2.5 h-2.5" />
+          <span className="text-[10px] font-medium">Access Portal</span>
+        </div>
+
+        {/* Heading */}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-semibold tracking-tight text-neutral-900">
+            Welcome back
+          </h1>
+          <p className="mt-1 text-xs text-neutral-500 max-w-xs leading-relaxed">
+            Sign in to decode food labels and track your nutrition safety matrix.
+          </p>
+        </div>
+
+        {/* Email Magic Link Form */}
+        <form onSubmit={handleEmailAuth} className="w-full flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-medium text-neutral-700">
+              Email address
+            </label>
+            <div className="relative flex items-center">
+              <Mail className="absolute left-2.5 w-3.5 h-3.5 text-neutral-400" />
               <input
+                type="email"
+                required
+                value={email}
+                placeholder="name@example.com"
                 onChange={(e) => {
-                  setEmail(e.currentTarget.value);
+                  setEmail(e.target.value);
                   setStatus(false);
                 }}
-                className="w-full h-10 py-2 px-4 rounded-full border text-neutral-700 text-sm border-neutral-300 outline-neutral-600"
-              ></input>
+                className="w-full h-8 pl-8 pr-3 rounded-md border border-neutral-200 bg-white text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 shadow-2xs transition-colors"
+              />
             </div>
+          </div>
 
-            <div className="w-full flex justify-center">
-              <button
-                onClick={handleEmailAuth}
-                disabled={countdown > 0}
-                className={`w-[90%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-800 bg-black px-3 text-white rounded-full duration-300 ease-in-out text-md active:scale-95 ${countdown > 0 ? "bg-neutral-700 active:scale-100 hover:bg-neutral-700" : ""}`}
-              >{`Log In`}</button>
-            </div>
+          <button
+            type="submit"
+            disabled={countdown > 0 || !email.trim()}
+            className="w-full h-8 flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 text-neutral-50 text-[11px] font-medium hover:bg-neutral-800 disabled:opacity-40 active:scale-[0.98] transition-all shadow-2xs"
+          >
+            <span>{countdown > 0 ? `Resend in ${countdown}s` : "Continue with Email"}</span>
+            <ArrowRight className="w-3 h-3 text-neutral-400" />
+          </button>
+        </form>
+
+        {/* OTP Success Status */}
+        {status && (
+          <div className="mt-3 p-2.5 rounded-md bg-neutral-50 border border-neutral-200 text-center w-full">
+            <p className="text-[11px] text-neutral-600 leading-normal">
+              We sent a temporary sign-in link to <span className="font-medium text-neutral-900">{email}</span>. Check your inbox to continue.
+            </p>
           </div>
-          {status && (
-            <div className="text-xs max-w-xl text-gray-600 text-center duration-300 ease-in-out leading-6">{`We've sent a secure sign-in link to ${email}. Click the link in the email to sign in to Pulse AI.If didn't receive the mail retry after ${countdown}`}</div>
-          )}
-        </motion.div>
-        <motion.div
-          variants={child}
-          className="lg:w-[30%] w-[70%]  gap-2 flex items-center justify-center py-4 px-10"
+        )}
+
+        {/* Divider */}
+        <div className="w-full flex items-center gap-2.5 my-4">
+          <div className="h-px flex-1 bg-neutral-100" />
+          <span className="text-[9px] font-mono text-neutral-400 uppercase">OR</span>
+          <div className="h-px flex-1 bg-neutral-100" />
+        </div>
+
+        {/* Google OAuth Button */}
+        <button
+          type="button"
+          onClick={handleGoogleAuth}
+          className="w-full h-8 flex items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white text-neutral-700 text-[11px] font-medium hover:bg-neutral-50 hover:text-neutral-900 active:scale-[0.98] transition-all shadow-2xs"
         >
-          <div className="w-full border border-neutral-300"></div>
-          <div className="w-auto text-sm font-semibold text-neutral-700">
-            {"OR"}
-          </div>
-          <div className="w-full border border-neutral-300"></div>
-        </motion.div>
-        <motion.button
-          onClick={() => {
-            handleGoogleAuth();
-          }}
-          variants={child}
-          className="lg:w-[20%] w-[60%] mt-2 py-2 text-center font-semibold cursor-pointer hover:bg-neutral-100 px-3 border border-neutral-200 duration-300 ease-in-out text-neutral-800  rounded-full text-md flex items-center justify-center gap-1 active:scale-95"
-        >
-          {`Continue with `} <GoogleIcon className="lg:size-5 size-4.8 " />
-        </motion.button>
-        <motion.div variants={child} className="mt-4 flex justify-center">
-          <p className="w-[60%] text-xs text-neutral-400 text-center hover:text-neutral-700 duration-300 ease-in-out cursor-pointer group">
-            {`By continuing, you agree to our`}{" "}
-            <span className="text-lime-500 group-hover:text-lime-800">
-              {" "}
-              Terms of Service and Privacy Policy.
-            </span>
-          </p>
-        </motion.div>
+          <GoogleIcon className="w-3.5 h-3.5" />
+          <span>Continue with Google</span>
+        </button>
+
+        {/* Legal Disclaimer */}
+        <p className="mt-5 text-[10px] text-neutral-400 text-center max-w-xs leading-relaxed">
+          By continuing, you agree to our{" "}
+          <a href="#terms" className="text-neutral-600 hover:text-neutral-900 underline underline-offset-2 transition-colors">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#privacy" className="text-neutral-600 hover:text-neutral-900 underline underline-offset-2 transition-colors">
+            Privacy Policy
+          </a>.
+        </p>
       </motion.div>
-      {/* <div className="w-full h-full bg-linear-to-br from-lime-400 via-green-400 to-neutral-800 flex justify-center items-center">
-        <Image src={'/bowl.jpg'} width={100} height={100} alt="image" className="bg-transparent"></Image>
-      </div> */}
+
+      {/* ── Footer ── */}
+      <footer className="text-center text-[10px] text-neutral-400 py-2">
+        © {new Date().getFullYear()} Pulse AI. All rights reserved.
+      </footer>
+
     </div>
   );
 }
