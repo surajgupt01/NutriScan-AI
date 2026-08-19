@@ -12,7 +12,7 @@ import {
 
 export default function FeaturesFlow() {
   return (
-    <section className="w-full bg-white text-neutral-900 py-16 antialiased">
+    <section id="features" className="w-full bg-white text-neutral-900 py-16 antialiased">
       <div className="max-w-4xl mx-auto px-4">
         
         {/* ── Section Header ── */}
