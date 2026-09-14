@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Camera,
@@ -29,6 +29,16 @@ import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 
+// Safe JSON extractor that handles markdown fences and edge characters
+function parseModelJson(raw: string): PulseResponse {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    return JSON.parse(cleaned);
+  }
+}
+
 async function processImage(file: File): Promise<File> {
   let processedFile = file;
 
@@ -39,7 +49,6 @@ async function processImage(file: File): Promise<File> {
     file.name.toLowerCase().endsWith(".heif")
   ) {
     const heic2any = (await import("heic2any")).default;
-
     const blob = await heic2any({
       blob: file,
       toType: "image/jpeg",
@@ -60,40 +69,34 @@ async function processImage(file: File): Promise<File> {
   });
 }
 
-export default function Scan() {
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+interface UserMessage {
+  role: "user";
+  data: string;
+  image?: string | null;
+}
 
+interface AssistantMessage {
+  role: "assistant";
+  data: PulseBlock[];
+}
+
+interface LoadingState {
+  role: "server";
+  data: "loading";
+}
+
+type ChatMessage = UserMessage | AssistantMessage | LoadingState;
+
+export default function Scan() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // 1. Stable Session ID across re-renders (in-memory)
+  const [sessionId, setSessionId] = useState<string>(() => crypto.randomUUID());
+
   const [path, setPath] = useState<string | null>(null);
   const [input, setInput] = useState("");
-
-  interface UserMessage {
-    role: "user";
-    data: string;
-    image?: string | null;
-  }
-
-  interface AssistantMessage {
-    role: "assistant";
-    data: PulseBlock[];
-  }
-
-  interface LoadingState {
-    role: "server";
-    data: "loading";
-  }
-
-  type ChatMessage = UserMessage | AssistantMessage | LoadingState;
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [base64, setBase64] = useState("");
   const [responseWait, setResponseWait] = useState(false);
@@ -106,7 +109,7 @@ export default function Scan() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  // Dynamic auto-resizing textarea
+  // Dynamic textarea height
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -120,32 +123,36 @@ export default function Scan() {
         data: { user },
         error,
       } = await supabase.auth.getUser();
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
+      if (error) return;
       setUser(user);
     }
-
     loadUser();
   }, []);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (!error) {
-      router.push("/login");
-    }
+    if (!error) router.push("/login");
   };
+
+  // Reset scan conversation and initiate new sticky session ID
+  const startNewScan = useCallback(() => {
+    if (path) URL.revokeObjectURL(path);
+    setChat([]);
+    setInput("");
+    setPath(null);
+    setBase64("");
+    setSessionId(crypto.randomUUID());
+    if (window.innerWidth < 768) setMenuPanel(false);
+  }, [path]);
 
   async function handleScanBody(customText?: string) {
     const userMsg = (customText || input).trim();
     if (!userMsg && !base64) return;
 
-    const activeImage = path;
-    const activeBase64 = base64;
+    const currentImageThumbnail = path;
+    const currentBase64 = base64;
 
+    // Clear input bar immediately
     setInput("");
     setPath(null);
     setBase64("");
@@ -154,19 +161,18 @@ export default function Scan() {
       textareaRef.current.style.height = "auto";
     }
 
-    const BackendPath = process.env.NEXT_PUBLIC_API_URL;
-    if (!BackendPath) return;
+    const backendPath = process.env.NEXT_PUBLIC_API_URL || "/scan/";
 
-    const contextChat: ChatMessage[] = [
-      ...chat,
-      {
-        role: "user",
-        data: userMsg || "Scan this label for nutrition facts and health flags.",
-        image: activeImage,
-      },
-    ];
+    const newUserTurn: UserMessage = {
+      role: "user",
+      data: userMsg || "Scan this label for nutrition facts and health flags.",
+      image: currentImageThumbnail,
+    };
 
-    setChat([...contextChat, { role: "server", data: "loading" }]);
+    // Filter out previous loading states to keep context clean
+    const currentHistory = chat.filter((msg): msg is UserMessage | AssistantMessage => msg.role !== "server");
+
+    setChat([...currentHistory, newUserTurn, { role: "server", data: "loading" }]);
     setResponseWait(true);
 
     setTimeout(() => {
@@ -174,23 +180,41 @@ export default function Scan() {
     }, 50);
 
     try {
-      const response = await axios.post(BackendPath, {
-        prompt: userMsg || "Scan this label for nutrition facts and health flags.",
-        image: activeBase64,
-        contextofChat: contextChat,
+      // Pass backend-optimized payload with session_id
+      const response = await axios.post(backendPath, {
+        session_id: sessionId,
+        prompt: newUserTurn.data,
+        image: currentBase64 || null, // Image only passed on the turn it was attached
+        contextofChat: currentHistory.map((m) => ({
+          role: m.role,
+          data: m.data,
+        })),
       });
 
-      const parsedResponse: PulseResponse = JSON.parse(response.data.response);
+      const parsedResponse = parseModelJson(response.data.response);
 
       setChat((prev) => [
         ...prev.filter((msg) => msg.role !== "server"),
         {
           role: "assistant",
-          data: parsedResponse.blocks,
+          data: parsedResponse.blocks || [],
         },
       ]);
     } catch (error) {
-      console.error(error);
+      console.error("Scan error:", error);
+      setChat((prev) => [
+        ...prev.filter((msg) => msg.role !== "server"),
+        {
+          role: "assistant",
+          data: [
+            {
+              type: "warning",
+              severity: "high",
+              content: "Failed to process the label scan. Please try again with a clearer image.",
+            } as PulseBlock,
+          ],
+        },
+      ]);
     } finally {
       setResponseWait(false);
       setTimeout(() => {
@@ -206,16 +230,23 @@ export default function Scan() {
     const formats = ["jpeg", "jpg", "heif", "heic", "png", "webp"];
     const ext = fileInput.name.split(".").pop()?.toLowerCase();
     if (ext && !formats.includes(ext)) {
-      alert("Invalid image type");
+      alert("Invalid image format");
       return;
     }
 
     try {
       setImgUpload(true);
-      const compressedImage = await processImage(fileInput);
-      const b64 = await fileToBase64(compressedImage);
+      const compressed = await processImage(fileInput);
+      const b64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(compressed);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+
+      if (path) URL.revokeObjectURL(path);
       setBase64(b64);
-      setPath(URL.createObjectURL(compressedImage));
+      setPath(URL.createObjectURL(compressed));
     } catch (err) {
       console.error(err);
     } finally {
@@ -262,21 +293,16 @@ export default function Scan() {
         )}
       </AnimatePresence>
 
-      {/* ── Sidebar (Slide-over on mobile / fixed width when open on desktop) ── */}
+      {/* ── Sidebar ── */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex flex-col justify-between border-r border-neutral-200 bg-white transition-transform duration-200 ease-in-out md:static ${
-          menu
-            ? "w-64 translate-x-0"
-            : "-translate-x-full md:w-0 md:border-none md:overflow-hidden"
+          menu ? "w-64 translate-x-0" : "-translate-x-full md:w-0 md:border-none md:overflow-hidden"
         }`}
       >
         <div className="flex flex-col p-3 overflow-hidden">
-          {/* Header */}
           <div className="flex items-center justify-between px-1 py-1 mb-2">
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-xs tracking-tight text-neutral-900">
-                Pulse
-              </span>
+              <span className="font-semibold text-xs tracking-tight text-neutral-900">Pulse</span>
               <span className="h-1 w-1 rounded-full bg-neutral-400" />
               <span className="text-[9px] font-mono text-neutral-400">AI</span>
             </div>
@@ -290,27 +316,20 @@ export default function Scan() {
             </button>
           </div>
 
-          {/* New Scan Button */}
           <button
             type="button"
-            onClick={() => {
-              setChat([]);
-              if (window.innerWidth < 768) setMenuPanel(false);
-            }}
+            onClick={startNewScan}
             className="flex items-center justify-center gap-1.5 w-full px-2.5 py-1.5 rounded-md bg-neutral-900 text-neutral-50 text-[11px] font-medium hover:bg-neutral-800 active:scale-95 transition-all shadow-2xs mb-2"
-            title="New Chat"
           >
             <Plus className="w-3.5 h-3.5 shrink-0" />
             <span>New Scan</span>
           </button>
 
-          {/* Quick Search */}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-50 border border-neutral-200 text-[11px] text-neutral-400 mb-3">
             <TextSearch className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">Search history...</span>
           </div>
 
-          {/* History */}
           <div className="flex flex-col gap-0.5">
             <span className="px-1 text-[9px] font-mono text-neutral-400 uppercase tracking-wider">
               History
@@ -333,7 +352,6 @@ export default function Scan() {
           </div>
         </div>
 
-        {/* User Footer */}
         <div className="p-2 border-t border-neutral-100">
           <div className="flex items-center justify-between p-1.5 rounded-md bg-neutral-50 border border-neutral-200/80">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -377,7 +395,6 @@ export default function Scan() {
 
       {/* ── Main Stage ── */}
       <main className="flex min-h-0 flex-1 flex-col bg-white">
-        {/* Top Header with Always-Visible Toggle Button when Closed */}
         <header className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-100 px-3 md:px-8 z-10">
           <div className="flex items-center gap-2">
             {!menu && (
@@ -398,7 +415,7 @@ export default function Scan() {
           </div>
           <button
             type="button"
-            onClick={() => setChat([])}
+            onClick={startNewScan}
             className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-neutral-800 transition-colors"
           >
             <RefreshCw className="w-3 h-3" />
@@ -409,8 +426,6 @@ export default function Scan() {
         {/* Scrollable Chat Area */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 md:px-6 py-6">
           <div className="w-full max-w-4xl mx-auto flex flex-col gap-4">
-            
-            {/* Empty State Screen */}
             {chat.length === 0 && (
               <div className="flex flex-1 flex-col items-center justify-center my-auto pt-8 pb-4 text-center">
                 <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200 mb-2">
@@ -425,7 +440,6 @@ export default function Scan() {
                   Upload an ingredient label image or enter any nutritional query for instant structured diagnostics.
                 </p>
 
-                {/* Default Scan Feature Badges */}
                 <div className="mt-6 flex w-full flex-wrap items-center justify-center gap-2 max-w-3xl">
                   {scanFeatures.map((e) => (
                     <button
@@ -445,7 +459,6 @@ export default function Scan() {
               </div>
             )}
 
-            {/* Chat Messages */}
             {chat.map((msg, idx) => (
               <div
                 key={idx}
@@ -458,7 +471,7 @@ export default function Scan() {
                   className={`w-full ${
                     msg.role === "user"
                       ? "max-w-2xl flex flex-col items-end"
-                      : "max-w-4xl rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs"
+                      : "max-w-4xl rounded-xl border border-neutral-50 bg-white p-4 shadow-2xs"
                   }`}
                 >
                   {msg.role === "user" ? (
@@ -502,10 +515,9 @@ export default function Scan() {
           </div>
         </div>
 
-        {/* ── Fixed Typing Box Container (max-w-2xl) ── */}
+        {/* ── Fixed Typing Box Container ── */}
         <div className="w-full shrink-0 p-3 md:px-6 md:pb-4 bg-gradient-to-t from-white via-white to-transparent">
           <div className="w-full max-w-2xl mx-auto">
-            {/* Upload Spinner Alert */}
             {imageUpload && (
               <div className="flex items-center gap-1.5 p-1.5 mb-1.5 text-[10px] text-neutral-500 bg-neutral-50 rounded-md border border-neutral-200">
                 <div className="w-2.5 h-2.5 rounded-full border border-neutral-400 border-t-transparent animate-spin" />
@@ -513,13 +525,13 @@ export default function Scan() {
               </div>
             )}
 
-            {/* Selected Image Thumbnail Preview */}
             {path && (
               <div className="mb-1.5">
                 <div className="relative inline-flex h-11 w-11 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-2xs">
                   <button
                     type="button"
                     onClick={() => {
+                      if (path) URL.revokeObjectURL(path);
                       setPath(null);
                       setBase64("");
                     }}
@@ -538,7 +550,6 @@ export default function Scan() {
               </div>
             )}
 
-            {/* Input Card with Dynamic Auto-Growing Textarea */}
             <div className="relative flex flex-col rounded-lg border border-neutral-200 bg-white p-2.5 shadow-2xs focus-within:border-neutral-300 transition-all">
               <textarea
                 ref={textareaRef}
@@ -555,7 +566,6 @@ export default function Scan() {
                 className="w-full resize-none overflow-y-auto bg-transparent px-0.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none min-h-[22px] max-h-44 leading-relaxed"
               />
 
-              {/* Action Toolbar */}
               <div className="flex items-center justify-between pt-2 border-t border-neutral-100 mt-1.5">
                 <div className="flex items-center gap-1">
                   <label
