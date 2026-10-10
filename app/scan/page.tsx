@@ -15,9 +15,6 @@ import {
   RefreshCw,
   LogOut,
   SlidersHorizontal,
-  Activity,
-  AlertTriangle,
-  ShieldAlert,
   PanelLeft,
 } from "lucide-react";
 import { scanFeatures } from "../constants/default";
@@ -28,12 +25,16 @@ import ChatThinkingLoader from "../Icons/Loading";
 import { SupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import BlockRenderer from "../components/BlockRenderer";
 
 function parseModelJson(raw: string): PulseResponse {
   try {
     return JSON.parse(raw);
   } catch {
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
     try {
       return JSON.parse(cleaned);
     } catch {
@@ -45,11 +46,16 @@ function parseModelJson(raw: string): PulseResponse {
 // Extract valid completed blocks from partial JSON in real-time
 function getLiveBlocks(raw: string): PulseBlock[] {
   try {
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
     const partial = partialParse(cleaned);
     if (partial && Array.isArray(partial.blocks)) {
       // Only render blocks that have at least a defined 'type'
-      return partial.blocks.filter((b: any) => b && typeof b === "object" && Boolean(b.type));
+      return partial.blocks.filter(
+        (b: any) => b && typeof b === "object" && Boolean(b.type),
+      );
     }
   } catch {
     // Return empty if chunk is still forming the root object
@@ -76,7 +82,7 @@ async function processImage(file: File): Promise<File> {
     processedFile = new File(
       [blob as Blob],
       file.name.replace(/\.(heic|heif)$/i, ".jpg"),
-      { type: "image/jpeg" }
+      { type: "image/jpeg" },
     );
   }
 
@@ -147,7 +153,10 @@ export default function Scan() {
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (!error) router.push("/login");
+    if (!error) {
+      router.replace("/login"); // Prevents back button from returning to /scan
+      router.refresh(); // Clears server component cache
+    }
   };
 
   const startNewScan = useCallback(() => {
@@ -188,10 +197,14 @@ export default function Scan() {
     };
 
     const currentHistory = chat.filter(
-      (msg): msg is UserMessage | AssistantMessage => msg.role !== "server"
+      (msg): msg is UserMessage | AssistantMessage => msg.role !== "server",
     );
 
-    setChat([...currentHistory, newUserTurn, { role: "server", data: "loading" }]);
+    setChat([
+      ...currentHistory,
+      newUserTurn,
+      { role: "server", data: "loading" },
+    ]);
     setResponseWait(true);
     setTimeout(scrollToBottom, 50);
 
@@ -205,7 +218,8 @@ export default function Scan() {
           image: currentBase64 || null,
           contextofChat: currentHistory.map((m) => ({
             role: m.role,
-            data: m.role === "assistant" && Array.isArray(m.data) ? m.data : m.data,
+            data:
+              m.role === "assistant" && Array.isArray(m.data) ? m.data : m.data,
           })),
         }),
       });
@@ -303,7 +317,8 @@ export default function Scan() {
             {
               type: "warning",
               severity: "high",
-              content: "Failed to process the label scan. Please try again with a clearer image.",
+              content:
+                "Failed to process the label scan. Please try again with a clearer image.",
             } as PulseBlock,
           ],
           isStreaming: false,
@@ -389,13 +404,17 @@ export default function Scan() {
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex flex-col justify-between border-r border-neutral-200 bg-white transition-all duration-300 ease-in-out md:static ${
-          menu ? "w-64 translate-x-0" : "-translate-x-full md:w-0 md:border-none md:overflow-hidden"
+          menu
+            ? "w-64 translate-x-0"
+            : "-translate-x-full md:w-0 md:border-none md:overflow-hidden"
         }`}
       >
         <div className="flex flex-col p-3 overflow-hidden">
           <div className="flex items-center justify-between px-1 py-1 mb-2">
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-xs tracking-tight text-neutral-900">Pulse</span>
+              <span className="font-semibold text-xs tracking-tight text-neutral-900">
+                Pulse
+              </span>
               <span className="h-1 w-1 rounded-full bg-neutral-400" />
               <span className="text-[9px] font-mono text-neutral-400">AI</span>
             </div>
@@ -432,21 +451,23 @@ export default function Scan() {
               Recent Scans
             </span>
             <div className="flex flex-col gap-0.5 mt-1">
-              {["Greek Yogurt Whole Milk", "Organic Protein Bar", "Almond Milk Unsweetened"].map(
-                (item) => (
-                  <button
-                    type="button"
-                    key={item}
-                    onClick={() => {
-                      if (window.innerWidth < 768) setMenuPanel(false);
-                    }}
-                    className="group flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 text-left truncate transition-colors active:scale-[0.99]"
-                  >
-                    <ScanLine className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-700 shrink-0 transition-colors" />
-                    <span className="truncate">{item}</span>
-                  </button>
-                )
-              )}
+              {[
+                "Greek Yogurt Whole Milk",
+                "Organic Protein Bar",
+                "Almond Milk Unsweetened",
+              ].map((item) => (
+                <button
+                  type="button"
+                  key={item}
+                  onClick={() => {
+                    if (window.innerWidth < 768) setMenuPanel(false);
+                  }}
+                  className="group flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 text-left truncate transition-colors active:scale-[0.99]"
+                >
+                  <ScanLine className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-700 shrink-0 transition-colors" />
+                  <span className="truncate">{item}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -506,7 +527,9 @@ export default function Scan() {
                 <PanelLeft className="w-3.5 h-3.5" />
               </button>
             )}
-            <span className="text-[11px] font-medium text-neutral-800">Nutrition Diagnostic Agent</span>
+            <span className="text-[11px] font-medium text-neutral-800">
+              Nutrition Diagnostic Agent
+            </span>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Real-time Analysis
@@ -529,14 +552,17 @@ export default function Scan() {
               <div className="flex flex-1 flex-col items-center justify-center my-auto pt-10 pb-4 text-center">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 mb-3">
                   <Sparkles className="w-2.5 h-2.5 text-neutral-700" />
-                  <span className="text-[10px] font-medium text-neutral-700">Pulse Label Intelligence</span>
+                  <span className="text-[10px] font-medium text-neutral-700">
+                    Pulse Label Intelligence
+                  </span>
                 </div>
 
                 <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-neutral-900">
                   Welcome to Pulse AI
                 </h1>
                 <p className="mt-1.5 text-xs text-neutral-500 max-w-md leading-relaxed">
-                  Upload an ingredient label image or enter any nutritional query for real-time structured analysis.
+                  Upload an ingredient label image or enter any nutritional
+                  query for real-time structured analysis.
                 </p>
 
                 <div className="mt-6 flex w-full flex-wrap items-center justify-center gap-2 max-w-3xl">
@@ -551,8 +577,12 @@ export default function Scan() {
                         <e.icon className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[11px] font-medium text-neutral-800 leading-none">{e.title}</span>
-                        <span className="text-[9px] text-neutral-400 mt-0.5">{e.description}</span>
+                        <span className="text-[11px] font-medium text-neutral-800 leading-none">
+                          {e.title}
+                        </span>
+                        <span className="text-[9px] text-neutral-400 mt-0.5">
+                          {e.description}
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -598,7 +628,10 @@ export default function Scan() {
                     </div>
                   ) : msg.role === "server" ? (
                     <div className="flex items-center gap-2.5 py-1 text-neutral-500">
-                      <ChatThinkingLoader className="text-neutral-900" size={15} />
+                      <ChatThinkingLoader
+                        className="text-neutral-900"
+                        size={15}
+                      />
                       <div className="flex items-center gap-1.5">
                         <span className="text-[11px] font-medium text-neutral-700">
                           Reading ingredient matrix
@@ -613,18 +646,18 @@ export default function Scan() {
                   ) : msg.role === "assistant" ? (
                     <div className="w-full space-y-3">
                       {/* Live streamed block cards */}
-                      {msg.data && msg.data.length > 0 ? (
-                        msg.data.map((block, bIdx) => (
-                          <motion.div
-                            key={bIdx}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.25 }}
-                          >
-                            <BlockRenderer block={block} />
-                          </motion.div>
-                        ))
-                      ) : null}
+                      {msg.data && msg.data.length > 0
+                        ? msg.data.map((block, bIdx) => (
+                            <motion.div
+                              key={bIdx}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.25 }}
+                            >
+                              <BlockRenderer block={block} />
+                            </motion.div>
+                          ))
+                        : null}
 
                       {/* Stream heartbeat shown while blocks are actively arriving */}
                       {msg.isStreaming && (
@@ -761,141 +794,4 @@ export default function Scan() {
       </main>
     </div>
   );
-}
-
-/* ── Content Block Renderers ── */
-function BlockRenderer({ block }: { block: PulseBlock }) {
-  if (!block || !block.type) return null;
-
-  switch (block.type) {
-    case "text":
-      return (
-        <div className="w-full text-xs leading-relaxed text-neutral-700 font-normal whitespace-pre-wrap break-words">
-          {block.content}
-        </div>
-      );
-
-    case "score":
-      return (
-        <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3.5 transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-white border border-neutral-200 text-neutral-800 shadow-2xs">
-                <Activity className="w-4 h-4 text-neutral-800" />
-              </div>
-              <div>
-                <span className="text-xs font-semibold text-neutral-900">{block.label || "Health Score"}</span>
-                <p className="text-[9px] text-neutral-400 font-mono">Nutritional Density Score</p>
-              </div>
-            </div>
-            {block.value !== undefined && (
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-xl font-bold tracking-tight text-neutral-900 font-mono">
-                  {block.value}
-                </span>
-                <span className="text-[10px] text-neutral-400 font-mono">/100</span>
-              </div>
-            )}
-          </div>
-          {block.explanation && (
-            <p className="mt-2 text-[11px] text-neutral-600 leading-relaxed border-t border-neutral-200/60 pt-2 font-normal">
-              {block.explanation}
-            </p>
-          )}
-        </div>
-      );
-
-    case "warning":
-      return (
-        <div className="w-full flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
-          <div className="p-0.5 text-amber-700 mt-0.5">
-            <AlertTriangle className="w-4 h-4" />
-          </div>
-          <div className="space-y-0.5 min-w-0">
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-amber-800 font-mono">
-              {block.severity || "Moderate"} Risk Warning
-            </p>
-            <p className="text-xs text-neutral-700 leading-relaxed font-normal">{block.content}</p>
-          </div>
-        </div>
-      );
-
-    case "allergens":
-      return (
-        <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50/40 p-3">
-          <div className="flex items-center gap-1.5 mb-2">
-            <ShieldAlert className="w-3.5 h-3.5 text-neutral-700" />
-            <span className="text-xs font-medium text-neutral-900">Detected Allergens & Sensitive Compounds</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {block.items?.map((item) => (
-              <span
-                key={item}
-                className="rounded-md bg-white border border-neutral-200 px-2 py-0.5 text-[10px] font-medium text-neutral-700 shadow-2xs hover:border-neutral-300 transition-colors"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-      );
-
-    case "bullet_list":
-      return (
-        <div className="w-full space-y-1.5 rounded-xl border border-neutral-200 bg-neutral-50/30 p-3">
-          <span className="text-xs font-medium text-neutral-900">{block.title}</span>
-          <ul className="space-y-1 pl-4 text-xs text-neutral-600 list-disc marker:text-neutral-400">
-            {block.items?.map((item, idx) => (
-              <li key={idx} className="leading-relaxed font-normal">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
-
-    case "table":
-      return (
-        <div className="w-full overflow-hidden rounded-xl border border-neutral-200 bg-white">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-neutral-50 text-neutral-700 border-b border-neutral-200">
-              <tr>
-                {block.headers?.map((h) => (
-                  <th key={h} className="p-2.5 font-medium text-[10px] font-mono">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {block.rows?.map((row, rIdx) => (
-                <tr key={rIdx} className="hover:bg-neutral-50/50 transition-colors">
-                  {row.map((cell, cIdx) => (
-                    <td key={cIdx} className="p-2.5 text-[11px] text-neutral-600 font-normal">
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-
-    case "ingredient":
-      return (
-        <div className="w-full rounded-xl border border-neutral-200 bg-white p-3 shadow-2xs space-y-1 hover:border-neutral-300 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-900">{block.name}</span>
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 border border-neutral-200">
-              {block.category}
-            </span>
-          </div>
-          <p className="text-[11px] text-neutral-500 leading-relaxed font-normal">{block.explanation}</p>
-        </div>
-      );
-
-    default:
-      return null;
-  }
 }
